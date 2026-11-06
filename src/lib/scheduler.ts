@@ -29,7 +29,7 @@ async function briefUser(userId: number): Promise<void> {
 }
 
 export async function runBriefingsIfDue(): Promise<void> {
-  if (globalForScheduler.doombotBriefingRunning || currentClock() !== config.briefingTime) {
+  if (globalForScheduler.doombotBriefingRunning || currentClock() < config.briefingTime) {
     return;
   }
   globalForScheduler.doombotBriefingRunning = true;

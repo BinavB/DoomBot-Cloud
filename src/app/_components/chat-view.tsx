@@ -5,6 +5,7 @@ import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from 
 import { announceApprovalsChanged } from "@/components/events";
 import { Markdown } from "@/components/markdown";
 import { DoomMark } from "@/components/doom-mark";
+import { Icon } from "@/components/icon";
 
 interface ChatLine {
   id: number;
@@ -151,7 +152,8 @@ export function ChatView() {
   }
 
   function handleKeyDown(event: KeyboardEvent<HTMLTextAreaElement>) {
-    if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing) {
+    const touchKeyboard = window.matchMedia("(pointer: coarse)").matches;
+    if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing && !touchKeyboard) {
       event.preventDefault();
       void send(draft);
     }
@@ -172,21 +174,21 @@ export function ChatView() {
   return (
     <div className="relative flex h-full flex-col">
       <div ref={scrollRef} onScroll={handleScroll} className="min-h-0 flex-1 overflow-y-auto">
-        <div className="mx-auto flex w-full max-w-3xl flex-col gap-7 px-4 py-8 md:px-6">
+        <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-6 md:gap-7 md:px-6 md:py-8">
           {empty && (
-            <div className="flex flex-col items-center gap-6 pt-[12vh] text-center">
+            <div className="flex flex-col items-center gap-6 pt-[8vh] text-center md:pt-[12vh]">
               <DoomMark size={56} />
               <div className="flex flex-col gap-2">
-                <p className="font-display text-2xl font-semibold tracking-tight">What do you need today?</p>
+                <p className="font-display text-xl font-semibold tracking-tight md:text-2xl">What do you need today?</p>
                 <p className="text-sm text-muted">Ask about your day, your inbox, your tasks or the weather.</p>
               </div>
-              <div className="flex max-w-xl flex-wrap justify-center gap-2">
+              <div className="grid w-full max-w-xl grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:justify-center">
                 {suggestions.map((suggestion) => (
                   <button
                     key={suggestion}
                     type="button"
                     onClick={() => void send(suggestion)}
-                    className="rounded-full border border-line px-4 py-2 text-sm text-ink transition-colors hover:border-doom hover:bg-doom-soft"
+                    className="rounded-2xl border border-line bg-panel px-4 py-3 text-left text-sm leading-snug text-ink transition-colors hover:border-doom hover:bg-doom-soft sm:rounded-full sm:bg-transparent sm:py-2 sm:text-center"
                   >
                     {suggestion}
                   </button>
@@ -244,16 +246,16 @@ export function ChatView() {
         <button
           type="button"
           onClick={jumpToLatest}
-          className="absolute bottom-28 left-1/2 -translate-x-1/2 rounded-full border border-line bg-panel px-4 py-2 text-sm shadow-lg"
+          className="absolute bottom-24 left-1/2 -translate-x-1/2 rounded-full border border-line bg-panel px-4 py-2 text-sm shadow-lg md:bottom-28"
         >
           Jump to latest
         </button>
       )}
 
-      <div className="shrink-0 border-t border-line bg-canvas px-4 pt-3 pb-4 md:px-6">
+      <div className="shrink-0 bg-canvas px-3 pt-2 pb-[max(0.75rem,env(safe-area-inset-bottom))] md:border-t md:border-line md:px-6 md:pt-3 md:pb-4">
         <form
           onSubmit={handleSubmit}
-          className="mx-auto flex w-full max-w-3xl items-end gap-2 rounded-2xl border border-line bg-panel p-2 focus-within:border-doom"
+          className="mx-auto flex w-full max-w-3xl items-end gap-2 rounded-[1.75rem] border border-line bg-panel py-1.5 pr-1.5 pl-2 focus-within:border-doom"
         >
           <label htmlFor="composer" className="sr-only">
             Message DOOMBOT
@@ -270,17 +272,18 @@ export function ChatView() {
             }}
             onKeyDown={handleKeyDown}
             placeholder="Message DOOMBOT"
-            className="max-h-[200px] min-h-[40px] flex-1 resize-none bg-transparent px-3 py-2 leading-relaxed outline-none placeholder:text-muted"
+            className="max-h-[200px] min-h-[40px] flex-1 resize-none bg-transparent px-3 py-2 text-base leading-relaxed outline-none placeholder:text-muted md:text-[15px]"
           />
           <button
             type="submit"
             disabled={sending || draft.trim().length === 0}
-            className="h-10 shrink-0 rounded-xl bg-doom px-4 text-sm font-semibold text-canvas transition-opacity disabled:opacity-40"
+            aria-label="Send message"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-doom text-canvas transition-opacity disabled:opacity-40"
           >
-            Send
+            <Icon name="arrow_upward" size={22} />
           </button>
         </form>
-        <p className="mx-auto mt-2 w-full max-w-3xl text-center text-xs text-muted">
+        <p className="mx-auto mt-2 hidden w-full max-w-3xl text-center text-xs text-muted md:block">
           Enter to send, Shift+Enter for a new line. Actions that change things wait for your approval.
         </p>
       </div>

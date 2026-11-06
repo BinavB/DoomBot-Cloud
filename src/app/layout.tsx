@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Figtree, Sora } from "next/font/google";
 import "material-symbols/sharp.css";
 import "./globals.css";
@@ -16,6 +16,14 @@ const sora = Sora({
 export const metadata: Metadata = {
   title: { default: "DOOMBOT", template: "%s | DOOMBOT" },
   description: "A personal proactive AI agent",
+  appleWebApp: { capable: true, title: "DOOMBOT", statusBarStyle: "black-translucent" },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: "#0d1210",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
