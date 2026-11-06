@@ -1,5 +1,7 @@
 # DOOMBOT Cloud
 
+Live app: https://doombot-igba.onrender.com/
+
 The cloud version of DOOMBOT, a personal AI agent with a Doctor Doom theme. It keeps all data in a Turso database, so it can run on free hosts that wipe their disk, such as Render's free plan.
 
 Every person signs in with Google and gets a private account. Chats, Doombots, memories, to-dos, alerts and Google connections are never shared between accounts.
