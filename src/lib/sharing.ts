@@ -50,9 +50,12 @@ export async function readSharedChat(token: string): Promise<SharedChat | null> 
     "SELECT title FROM conversations WHERE user_id = ? AND id = ?",
     [share.user_id, share.conversation_id],
   );
+  if (!conversation) {
+    return null;
+  }
   const messages = await queryRows<{ role: "user" | "assistant"; content: string }>(
     "SELECT role, content FROM messages WHERE user_id = ? AND conversation_id = ? ORDER BY id LIMIT 500",
     [share.user_id, share.conversation_id],
   );
-  return { title: conversation?.title ?? "Shared chat", messages };
+  return { title: conversation.title, messages };
 }

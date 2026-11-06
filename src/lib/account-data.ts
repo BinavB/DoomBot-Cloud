@@ -15,6 +15,11 @@ const userTables = [
   "notifications",
   "push_subscriptions",
   "google_tokens",
+  "shared_chats",
+  "user_memories",
+  "user_settings",
+  "user_timezones",
+  "notes",
 ];
 
 export async function exportAccountData(): Promise<Record<string, unknown[]>> {

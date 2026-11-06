@@ -57,8 +57,29 @@ function requestSignal(external?: AbortSignal): AbortSignal {
   return external ? AbortSignal.any([timeout, external]) : timeout;
 }
 
+const imageTokenCost = 1500;
+
 function estimateTokens(text: string): number {
   return Math.ceil(text.length / 4);
+}
+
+function estimatePromptTokens(messages: ChatMessage[]): number {
+  let total = 0;
+  for (const message of messages) {
+    if (typeof message.content === "string") {
+      total += estimateTokens(message.content);
+    } else if (Array.isArray(message.content)) {
+      for (const part of message.content) {
+        total += part.type === "text" ? estimateTokens(part.text) : imageTokenCost;
+      }
+    }
+  }
+  return total;
+}
+
+interface StreamState {
+  content: string;
+  calls: StreamedToolCall[];
 }
 
 interface StreamedToolCall {
@@ -76,7 +97,7 @@ interface StreamChunk {
   }[];
 }
 
-function applyChunk(chunk: StreamChunk, state: { content: string; calls: StreamedToolCall[] }, onToken: (text: string) => void): void {
+function applyChunk(chunk: StreamChunk, state: StreamState, onToken: (text: string) => void): void {
   const delta = chunk.choices?.[0]?.delta;
   if (!delta) {
     return;
@@ -96,13 +117,13 @@ function applyChunk(chunk: StreamChunk, state: { content: string; calls: Streame
 async function readStream(
   response: Response,
   onToken: (text: string) => void,
+  state: StreamState,
 ): Promise<{ content: string; toolCalls: ToolCall[] }> {
   const reader = response.body?.getReader();
   if (!reader) {
     throw new AgentError("returned an empty response");
   }
   const decoder = new TextDecoder();
-  const state = { content: "", calls: [] as StreamedToolCall[] };
   let buffer = "";
 
   for (;;) {
@@ -165,18 +186,19 @@ async function requestCompletion(
   }
 
   if (options.onToken) {
-    const streamed = await readStream(response, options.onToken);
-    const promptText = messages
-      .map((message) => (typeof message.content === "string" ? message.content : ""))
-      .join("");
-    const completionText = streamed.content + JSON.stringify(streamed.toolCalls);
-    await recordUsage(`${provider.name}/${model}`, estimateTokens(promptText), estimateTokens(completionText));
-    return {
-      content: streamed.content || null,
-      toolCalls: streamed.toolCalls,
-      provider: provider.name,
-      model,
-    };
+    const state: StreamState = { content: "", calls: [] };
+    try {
+      const streamed = await readStream(response, options.onToken, state);
+      return {
+        content: streamed.content || null,
+        toolCalls: streamed.toolCalls,
+        provider: provider.name,
+        model,
+      };
+    } finally {
+      const completionText = state.content + JSON.stringify(state.calls);
+      await recordUsage(`${provider.name}/${model}`, estimatePromptTokens(messages), estimateTokens(completionText));
+    }
   }
 
   const body = (await response.json()) as CompletionResponse;
