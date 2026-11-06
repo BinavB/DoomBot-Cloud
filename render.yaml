@@ -27,8 +27,14 @@ services:
         sync: false
       - key: DEEPSEEK_API_KEY
         sync: false
+      - key: GROQ_API_KEY
+        sync: false
+      - key: MISTRAL_API_KEY
+        sync: false
+      - key: OPENROUTER_API_KEY
+        sync: false
       - key: AI_PROVIDERS
-        value: gemini,deepseek
+        value: gemini,groq,mistral,openrouter,deepseek
       - key: APP_TIMEZONE
         value: Asia/Dubai
       - key: BRIEFING_TIME

@@ -38,7 +38,6 @@ async function currentSubscription(): Promise<PushSubscription | null> {
 
 function formatTime(sqliteTime: string): string {
   return new Intl.DateTimeFormat("en-GB", {
-    timeZone: "Asia/Dubai",
     dateStyle: "medium",
     timeStyle: "short",
   }).format(new Date(`${sqliteTime.replace(" ", "T")}Z`));

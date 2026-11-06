@@ -8,7 +8,10 @@ Every person signs in with Google and gets a private account. Chats, Doombots, m
 
 ## What it does
 
-- Chat agent with an approval step for risky actions, using Gemini first and DeepSeek as a fallback.
+- Chat agent with an approval step for risky actions, using Gemini first and free backup providers when its daily limit runs out.
+- Streaming replies with a stop button, multiple chats with search, edit and regenerate, voice input and read-aloud.
+- Attach images and PDFs, switch between Fast and Think answers, and share a chat with a read-only link.
+- Custom instructions, account memory and a time zone for each person.
 - Morning briefing at 07:00 Dubai time with weather, headlines, calendar, unread email and to-dos.
 - Doombots with private memory, assigned tasks and routines that run hourly, daily, on weekdays, weekly or monthly.
 - Read-only Google Calendar, Gmail and Tasks, connected per account.
@@ -27,7 +30,8 @@ With the default `TURSO_DATABASE_URL=file:data/agent.db`, data is kept in a loca
 
 | Setting | What it is |
 | --- | --- |
-| `GEMINI_API_KEY`, `DEEPSEEK_API_KEY` | AI provider keys |
+| `GEMINI_API_KEY` | Main AI provider. The free tier works, but has daily limits |
+| `GROQ_API_KEY`, `MISTRAL_API_KEY`, `OPENROUTER_API_KEY`, `DEEPSEEK_API_KEY` | Optional backups, used in this order when Gemini runs out. Groq, Mistral and OpenRouter have free plans |
 | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | Google OAuth client, used for sign-in and for Calendar, Gmail and Tasks |
 | `AUTH_SECRET` | Random text of at least 32 characters that signs login cookies. Make one with `openssl rand -hex 32` |
 | `APP_URL` | The public address of the app, with no trailing slash |

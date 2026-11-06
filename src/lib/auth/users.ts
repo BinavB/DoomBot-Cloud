@@ -1,3 +1,4 @@
+import { config } from "@/lib/config";
 import { queryRow, queryRows, runStatement } from "@/lib/database";
 
 export interface User {
@@ -58,10 +59,17 @@ export async function findUser(userId: number): Promise<User | null> {
   return row;
 }
 
-export async function listActiveUserIds(): Promise<number[]> {
-  const rows = await queryRows<{ id: number }>(
-    "SELECT id FROM users WHERE last_seen_at >= datetime('now', ?) ORDER BY id",
+export async function getUserTimeZone(userId: number): Promise<string> {
+  const row = await queryRow<{ time_zone: string }>("SELECT time_zone FROM user_timezones WHERE user_id = ?", [userId]);
+  return row?.time_zone ?? config.timezone;
+}
+
+export async function listActiveUsers(): Promise<{ id: number; timeZone: string }[]> {
+  const rows = await queryRows<{ id: number; time_zone: string | null }>(
+    `SELECT u.id AS id, t.time_zone AS time_zone FROM users u
+     LEFT JOIN user_timezones t ON t.user_id = u.id
+     WHERE u.last_seen_at >= datetime('now', ?)`,
     [`-${activeWindowDays} days`],
   );
-  return rows.map((row) => row.id);
+  return rows.map((row) => ({ id: row.id, timeZone: row.time_zone ?? config.timezone }));
 }

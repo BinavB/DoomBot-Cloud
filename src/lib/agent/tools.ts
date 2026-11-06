@@ -1,10 +1,9 @@
-import { mkdir, writeFile } from "node:fs/promises";
-import { join } from "node:path";
 import { currentUserId } from "@/lib/auth/context";
+import { queryRows, runStatement } from "@/lib/database";
+import { addUserMemory } from "@/lib/settings";
 import { createChiefTools } from "@/lib/agent/chief-tools";
 import type { ToolSpec } from "@/lib/ai";
 import { fetchWeatherLine } from "@/lib/briefing/weather";
-import { config } from "@/lib/config";
 import { AgentError } from "@/lib/errors";
 import { openGoogleTasks, todaysCalendarEvents, unreadEmails } from "@/lib/google/client";
 import { addTodo, listTodos } from "@/lib/todos";
@@ -30,29 +29,28 @@ function readText(args: ToolArguments, key: string, maxLength: number): string {
   return value.trim();
 }
 
-function slugify(title: string): string {
-  const slug = title
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .slice(0, 60);
-  return slug.length > 0 ? slug : "note";
-}
-
 async function saveNote(args: ToolArguments): Promise<string> {
   const title = readText(args, "title", 120);
   const body = readText(args, "body", 20000);
-  const directory = join(config.notesDirectory, String(currentUserId()));
-  await mkdir(directory, { recursive: true });
-  const fileName = `${new Date().toISOString().replace(/[:.]/g, "-")}-${slugify(title)}.md`;
-  await writeFile(join(directory, fileName), `# ${title}\n\n${body}\n`, { flag: "wx" });
-  return `Saved note "${title}" in your notes folder as ${fileName}.`;
+  await runStatement("INSERT INTO notes (user_id, title, body) VALUES (?, ?, ?)", [currentUserId(), title, body]);
+  return `Saved note "${title}".`;
+}
+
+async function listNotes(): Promise<string> {
+  const rows = await queryRows<{ title: string; body: string; created_at: string }>(
+    "SELECT title, body, created_at FROM notes WHERE user_id = ? ORDER BY id DESC LIMIT 20",
+    [currentUserId()],
+  );
+  if (rows.length === 0) {
+    return "You have no saved notes.";
+  }
+  return rows.map((row) => `- ${row.title} (${row.created_at}): ${row.body.slice(0, 200)}`).join("\n");
 }
 
 const tools: AgentTool[] = [
   {
     name: "get_current_time",
-    description: "Get the current date and time in Dubai.",
+    description: "Get the current date and time in the user's time zone.",
     parameters: { type: "object", properties: {} },
     requiresApproval: false,
     summarize: () => "Read the current time",
@@ -60,7 +58,7 @@ const tools: AgentTool[] = [
   },
   {
     name: "get_weather",
-    description: "Get the current weather and today's forecast for Dubai.",
+    description: "Get the current weather and today's forecast for the home city.",
     parameters: { type: "object", properties: {} },
     requiresApproval: false,
     summarize: () => "Read the weather",
@@ -97,7 +95,7 @@ const tools: AgentTool[] = [
   },
   {
     name: "list_calendar_today",
-    description: "List today's Google Calendar events in Dubai time.",
+    description: "List today's Google Calendar events in the user's time zone.",
     parameters: { type: "object", properties: {} },
     requiresApproval: false,
     summarize: () => "Read today's calendar",
@@ -143,6 +141,30 @@ const tools: AgentTool[] = [
     requiresApproval: true,
     summarize: (args) => `Save note "${readText(args, "title", 120)}" to the notes folder`,
     run: saveNote,
+  },
+  {
+    name: "list_notes",
+    description: "List your 20 most recent saved notes.",
+    parameters: { type: "object", properties: {} },
+    requiresApproval: false,
+    summarize: () => "Read your notes",
+    run: listNotes,
+  },
+  {
+    name: "remember_about_me",
+    description:
+      "Save one short, lasting fact about the user to their account memory, such as a preference or a recurring detail. Use only when the user asks you to remember something or states a stable preference.",
+    parameters: {
+      type: "object",
+      properties: { fact: { type: "string", description: "One short fact, up to 300 characters." } },
+      required: ["fact"],
+    },
+    requiresApproval: true,
+    summarize: (args) => `Remember about you: "${readText(args, "fact", 300)}"`,
+    run: async (args) => {
+      await addUserMemory(readText(args, "fact", 300));
+      return "Saved to your memory.";
+    },
   },
   ...createChiefTools(() => new Set(botAllowedToolInfos().map((tool) => tool.name))),
 ];

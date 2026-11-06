@@ -141,6 +141,50 @@ const schema = `
   );
   CREATE INDEX IF NOT EXISTS push_subscriptions_user_index ON push_subscriptions (user_id);
 
+  CREATE TABLE IF NOT EXISTS conversations (
+    user_id INTEGER NOT NULL,
+    id TEXT NOT NULL,
+    title TEXT NOT NULL DEFAULT 'New chat',
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+    PRIMARY KEY (user_id, id)
+  );
+
+  CREATE TABLE IF NOT EXISTS shared_chats (
+    token TEXT PRIMARY KEY,
+    user_id INTEGER NOT NULL,
+    conversation_id TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    UNIQUE (user_id, conversation_id)
+  );
+
+  CREATE TABLE IF NOT EXISTS notes (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    title TEXT NOT NULL,
+    body TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+  CREATE INDEX IF NOT EXISTS notes_user_index ON notes (user_id, id);
+
+  CREATE TABLE IF NOT EXISTS user_memories (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    fact TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+  CREATE INDEX IF NOT EXISTS user_memories_user_index ON user_memories (user_id, id);
+
+  CREATE TABLE IF NOT EXISTS user_timezones (
+    user_id INTEGER PRIMARY KEY,
+    time_zone TEXT NOT NULL
+  );
+
+  CREATE TABLE IF NOT EXISTS user_settings (
+    user_id INTEGER PRIMARY KEY,
+    custom_instructions TEXT NOT NULL DEFAULT ''
+  );
+
   CREATE TABLE IF NOT EXISTS google_tokens (
     user_id INTEGER PRIMARY KEY,
     refresh_token TEXT NOT NULL,

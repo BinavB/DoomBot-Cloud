@@ -82,14 +82,13 @@ async function fetchBotDetail(botId: number): Promise<{ tasks: BotTask[]; memori
 
 function formatTime(sqliteTime: string): string {
   return new Intl.DateTimeFormat("en-GB", {
-    timeZone: "Asia/Dubai",
     dateStyle: "medium",
     timeStyle: "short",
   }).format(new Date(`${sqliteTime.replace(" ", "T")}Z`));
 }
 
 function formatClock(sqliteTime: string): string {
-  return new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/Dubai", timeStyle: "short" }).format(
+  return new Intl.DateTimeFormat("en-GB", { timeStyle: "short" }).format(
     new Date(`${sqliteTime.replace(" ", "T")}Z`),
   );
 }
@@ -639,7 +638,7 @@ export function BotsView() {
                   </label>
                 )}
                 <label className="flex flex-col gap-2 text-sm">
-                  Time (Dubai)
+                  Time (your time zone)
                   <input
                     type="time"
                     value={routineTime}

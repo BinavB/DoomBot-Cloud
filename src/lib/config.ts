@@ -44,6 +44,29 @@ const providerCatalog: Record<string, () => AiProvider> = {
       ]),
     ],
   }),
+  groq: () => ({
+    name: "groq",
+    apiKey: readText("GROQ_API_KEY", ""),
+    baseUrl: readText("GROQ_BASE_URL", "https://api.groq.com/openai/v1"),
+    models: [
+      ...new Set([
+        readText("GROQ_MODEL", "llama-3.3-70b-versatile"),
+        ...readList("GROQ_FALLBACK_MODELS", "llama-3.1-8b-instant"),
+      ]),
+    ],
+  }),
+  mistral: () => ({
+    name: "mistral",
+    apiKey: readText("MISTRAL_API_KEY", ""),
+    baseUrl: readText("MISTRAL_BASE_URL", "https://api.mistral.ai/v1"),
+    models: [readText("MISTRAL_MODEL", "mistral-small-latest")],
+  }),
+  openrouter: () => ({
+    name: "openrouter",
+    apiKey: readText("OPENROUTER_API_KEY", ""),
+    baseUrl: readText("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1"),
+    models: [readText("OPENROUTER_MODEL", "openrouter/free")],
+  }),
   deepseek: () => ({
     name: "deepseek",
     apiKey: readText("DEEPSEEK_API_KEY", ""),
@@ -53,7 +76,7 @@ const providerCatalog: Record<string, () => AiProvider> = {
 };
 
 function readProviders(): AiProvider[] {
-  return readText("AI_PROVIDERS", "gemini,deepseek")
+  return readText("AI_PROVIDERS", "gemini,groq,mistral,openrouter,deepseek")
     .split(",")
     .map((name) => name.trim().toLowerCase())
     .filter((name) => name in providerCatalog)
@@ -70,7 +93,6 @@ export const config = {
   dailyTokenLimit: readNumber("DAILY_TOKEN_LIMIT", 200000),
   databaseUrl: readText("TURSO_DATABASE_URL", "file:data/agent.db"),
   databaseToken: readText("TURSO_AUTH_TOKEN", ""),
-  notesDirectory: readText("NOTES_DIRECTORY", "data/notes"),
   googleClientId: readText("GOOGLE_CLIENT_ID", ""),
   googleClientSecret: readText("GOOGLE_CLIENT_SECRET", ""),
   appUrl: readText("APP_URL", "http://localhost:3000").replace(/\/+$/, ""),

@@ -56,7 +56,7 @@ export function normalizeRoutine(
     return null;
   }
   if (!timePattern.test(time)) {
-    return "Give the routine a time like 07:30 (24-hour, Dubai time).";
+    return "Give the routine a time like 07:30 (24-hour, your local time).";
   }
   if (instruction.length === 0 || instruction.length > routineLimit) {
     return `Describe the routine in up to ${routineLimit} characters.`;

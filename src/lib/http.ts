@@ -12,3 +12,11 @@ export async function fetchText(url: string): Promise<string> {
 export async function fetchJson<T>(url: string): Promise<T> {
   return JSON.parse(await fetchText(url)) as T;
 }
+
+export async function readBody<T>(request: Request): Promise<T | null> {
+  try {
+    return (await request.json()) as T;
+  } catch {
+    return null;
+  }
+}

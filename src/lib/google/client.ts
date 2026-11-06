@@ -1,9 +1,8 @@
-import { config } from "@/lib/config";
 import { AgentError } from "@/lib/errors";
 import { getAccessToken } from "@/lib/google/oauth";
-import { currentDay } from "@/lib/time";
+import { currentTimeZone } from "@/lib/auth/context";
+import { currentDay, offsetFor } from "@/lib/time";
 
-const dubaiOffset = "+04:00";
 const dayMilliseconds = 24 * 60 * 60 * 1000;
 
 interface CalendarEvent {
@@ -29,7 +28,7 @@ async function googleGet<T>(url: string): Promise<T> {
 
 function formatClock(isoTime: string): string {
   return new Intl.DateTimeFormat("en-GB", {
-    timeZone: config.timezone,
+    timeZone: currentTimeZone(),
     hour: "2-digit",
     minute: "2-digit",
     hourCycle: "h23",
@@ -37,7 +36,9 @@ function formatClock(isoTime: string): string {
 }
 
 function todayBounds(): { start: string; end: string } {
-  const start = new Date(`${currentDay()}T00:00:00${dubaiOffset}`);
+  const timeZone = currentTimeZone();
+  const day = currentDay(timeZone);
+  const start = new Date(`${day}T00:00:00${offsetFor(timeZone, new Date(`${day}T12:00:00Z`))}`);
   return {
     start: start.toISOString(),
     end: new Date(start.getTime() + dayMilliseconds).toISOString(),

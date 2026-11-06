@@ -12,6 +12,7 @@ const links = [
   { href: "/todos", label: "To-do", icon: "task_alt" },
   { href: "/approvals", label: "Approvals", icon: "verified_user" },
   { href: "/connections", label: "Connections", icon: "hub" },
+  { href: "/settings", label: "Settings", icon: "tune" },
 ];
 
 interface NavListProps {

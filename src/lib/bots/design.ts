@@ -12,14 +12,14 @@ const maxDesignedBots = 3;
 function designInstructions(tools: DesignableTool[]): string {
   const toolList = tools.map((tool) => `- ${tool.name}: ${tool.description}`).join("\n");
   return [
-    "You design Doombots: small focused assistants for one person in Dubai.",
+    "You design Doombots: small focused assistants for one person.",
     `From the user's preferences, design 1 to ${maxDesignedBots} Doombots. Each has one clear job.`,
     'Name each one "Doombot <Word>", with a short, memorable word.',
     "Write instructions in the second person, saying what the Doombot does and how to answer.",
     `Give each Doombot an avatar: one robot style that suits its job, chosen from: ${avatarOptions.map((option) => option.id).join(", ")}`,
     "Pick only tools from this list that the job needs:",
     toolList,
-    "If the user wants something done on a schedule, add routineTime as 24-hour Dubai time (HH:MM), routineInstruction as the task, routineFrequency as one of hourly, daily, weekdays, weekly, monthly, and routineDay as a weekday 0 (Sunday) to 6 (Saturday) for weekly or a date 1 to 28 for monthly (otherwise null). Otherwise set all four to null.",
+    "If the user wants something done on a schedule, add routineTime as 24-hour local time (HH:MM), routineInstruction as the task, routineFrequency as one of hourly, daily, weekdays, weekly, monthly, and routineDay as a weekday 0 (Sunday) to 6 (Saturday) for weekly or a date 1 to 28 for monthly (otherwise null). Otherwise set all four to null.",
     'Reply with JSON only, in this shape: {"bots":[{"name":"","avatar":"","instructions":"","toolNames":[],"routineTime":null,"routineInstruction":null,"routineFrequency":null,"routineDay":null}]}',
   ].join("\n");
 }

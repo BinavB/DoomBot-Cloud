@@ -2,7 +2,7 @@ import { cookies } from "next/headers";
 import { connection, NextResponse } from "next/server";
 import { runAsUser } from "@/lib/auth/context";
 import { readSessionToken, sessionCookieName } from "@/lib/auth/session";
-import { findSessionUser, type User } from "@/lib/auth/users";
+import { findSessionUser, getUserTimeZone, type User } from "@/lib/auth/users";
 
 export async function currentSessionUser(): Promise<User | null> {
   const cookieStore = await cookies();
@@ -19,6 +19,7 @@ export function withUser<Args extends unknown[]>(
     if (!user) {
       return NextResponse.json({ error: "Sign in to continue." }, { status: 401 });
     }
-    return runAsUser(user.id, () => handler(...args));
+    const timeZone = await getUserTimeZone(user.id);
+    return runAsUser(user.id, timeZone, () => handler(...args));
   };
 }

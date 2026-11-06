@@ -155,7 +155,7 @@ export function createChiefTools(allowedBotTools: () => Set<string>): AgentTool[
             items: { type: "string" },
             description: "Tools it may use, chosen from the tools that do not need approval.",
           },
-          routine_time: { type: "string", description: "Optional time in 24-hour Dubai time, like 07:30." },
+          routine_time: { type: "string", description: "Optional time in 24-hour local time, like 07:30." },
           routine_instruction: { type: "string", description: "Optional task to run on the routine schedule." },
           routine_frequency: { type: "string", enum: [...frequencies], description: "How often the routine runs." },
           routine_day: {
@@ -203,7 +203,7 @@ export function createChiefTools(allowedBotTools: () => Set<string>): AgentTool[
           avatar: { type: "string", enum: avatarOptions.map((option) => option.id) },
           color: { type: "string", enum: colorOptions.map((option) => option.id) },
           tool_names: { type: "array", items: { type: "string" }, description: "The full new list of tools." },
-          routine_time: { type: "string", description: "Time, 24-hour Dubai time, like 07:30." },
+          routine_time: { type: "string", description: "Time, 24-hour local time, like 07:30." },
           routine_instruction: { type: "string", description: "What the routine does." },
           routine_frequency: { type: "string", enum: [...frequencies] },
           routine_day: { type: "integer", description: "Weekday 0 to 6 for weekly, date 1 to 28 for monthly." },

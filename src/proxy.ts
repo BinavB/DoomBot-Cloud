@@ -1,12 +1,12 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { readSessionToken, sessionCookieName } from "@/lib/auth/session";
 
-const publicPaths = ["/login", "/api/auth/logout", "/api/cron", "/manifest.webmanifest", "/sw.js", "/icon.svg"];
-const publicPrefix = "/api/auth/google/";
+const publicPaths = ["/login", "/privacy", "/terms", "/api/health", "/api/auth/logout", "/api/cron", "/manifest.webmanifest", "/sw.js", "/icon.svg", "/icon-512.png", "/apple-icon.png"];
+const publicPrefixes = ["/api/auth/google/", "/share/", "/api/share/"];
 const safeMethods = ["GET", "HEAD", "OPTIONS"];
 
 function isPublic(pathname: string): boolean {
-  return publicPaths.includes(pathname) || pathname.startsWith(publicPrefix);
+  return publicPaths.includes(pathname) || publicPrefixes.some((prefix) => pathname.startsWith(prefix));
 }
 
 function isCrossSiteWrite(request: NextRequest): boolean {
