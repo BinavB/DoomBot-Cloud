@@ -63,3 +63,29 @@ export async function addUserMemory(fact: string): Promise<void> {
 export async function deleteUserMemory(id: number): Promise<void> {
   await runStatement("DELETE FROM user_memories WHERE id = ? AND user_id = ?", [id, currentUserId()]);
 }
+
+export interface HomeLocation {
+  city: string;
+  latitude: number;
+  longitude: number;
+}
+
+export async function getHomeLocation(): Promise<HomeLocation | null> {
+  const row = await queryRow<{ city: string; latitude: number; longitude: number }>(
+    "SELECT city, latitude, longitude FROM user_locations WHERE user_id = ?",
+    [currentUserId()],
+  );
+  return row ?? null;
+}
+
+export async function saveHomeLocation(location: HomeLocation): Promise<void> {
+  await runStatement(
+    `INSERT INTO user_locations (user_id, city, latitude, longitude) VALUES (?, ?, ?, ?)
+     ON CONFLICT(user_id) DO UPDATE SET city = excluded.city, latitude = excluded.latitude, longitude = excluded.longitude`,
+    [currentUserId(), location.city, location.latitude, location.longitude],
+  );
+}
+
+export async function clearHomeLocation(): Promise<void> {
+  await runStatement("DELETE FROM user_locations WHERE user_id = ?", [currentUserId()]);
+}

@@ -490,7 +490,7 @@ export function ChatView() {
   return (
     <div className="relative flex h-full min-h-0">
       <aside
-        className={`${showChats ? "absolute inset-y-0 left-0 z-20 flex w-72 max-w-[85%] border-r border-line bg-panel p-3 shadow-xl" : "hidden"} md:static md:flex md:w-64 md:shrink-0 md:border-r md:border-line md:bg-panel md:p-3 md:shadow-none`}
+        className={`${showChats ? "absolute inset-y-0 left-0 z-20 flex w-72 max-w-[85%] flex-col border-r border-line bg-panel p-3 shadow-xl" : "hidden"} md:static md:flex md:w-64 md:shrink-0 md:flex-col md:border-r md:border-line md:bg-panel md:p-3 md:shadow-none`}
       >
         <ChatHistory
           conversations={conversations}
@@ -699,7 +699,7 @@ export function ChatView() {
           )}
           <form
             onSubmit={handleSubmit}
-            className="mx-auto flex w-full max-w-3xl items-end gap-2 rounded-[1.75rem] border border-line bg-panel py-1.5 pr-1.5 pl-2 focus-within:border-doom"
+            className="mx-auto flex w-full max-w-3xl items-end gap-1 rounded-[1.75rem] sm:gap-2 border border-line bg-panel py-1.5 pr-1.5 pl-2 focus-within:border-doom"
           >
             <label htmlFor="composer" className="sr-only">
               Message DOOMBOT
@@ -725,7 +725,7 @@ export function ChatView() {
                 aria-pressed={think}
                 aria-label={think ? "Think mode on" : "Think mode off"}
                 title={think ? "Think mode: slower, deeper answers" : "Fast mode: quick answers"}
-                className={`flex h-10 shrink-0 items-center gap-1.5 rounded-full px-3 text-sm transition-colors ${
+                className={`flex h-9 shrink-0 items-center gap-1.5 rounded-full px-2 text-sm transition-colors sm:px-3 ${
                   think ? "bg-doom-soft text-doom" : "text-muted hover:bg-raised hover:text-ink"
                 }`}
               >
@@ -750,7 +750,7 @@ export function ChatView() {
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
                   aria-label="Attach an image or PDF"
-                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-muted hover:bg-raised hover:text-ink"
+                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-muted hover:bg-raised hover:text-ink"
                 >
                   <Icon name="add_photo_alternate" size={22} />
                 </button>

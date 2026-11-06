@@ -27,6 +27,7 @@ const timeZones = [
 interface SettingsData {
   customInstructions: string;
   timeZone: string;
+  homeCity: string;
   memories: Memory[];
   maxInstructionsLength: number;
 }
@@ -36,6 +37,7 @@ export function SettingsView() {
   const [instructions, setInstructions] = useState("");
   const [message, setMessage] = useState<string | null>(null);
   const [timeZone, setTimeZone] = useState("Asia/Dubai");
+  const [homeCity, setHomeCity] = useState("");
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -45,6 +47,7 @@ export function SettingsView() {
         setData(loaded);
         setInstructions(loaded.customInstructions);
         setTimeZone(loaded.timeZone);
+        setHomeCity(loaded.homeCity);
       })
       .catch(() => setError("Settings could not load. Reload the page to try again."));
   }, []);
@@ -55,9 +58,10 @@ export function SettingsView() {
     const response = await fetch("/api/settings", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ customInstructions: instructions, timeZone }),
+      body: JSON.stringify({ customInstructions: instructions, timeZone, homeCity }),
     });
-    setMessage(response.ok ? "Saved. Briefings and routines now follow this time zone." : "Could not save. Try again.");
+    const saved = (await response.json().catch(() => ({}))) as { error?: string };
+    setMessage(response.ok ? "Saved. Briefings and routines now follow these settings." : saved.error ?? "Could not save. Try again.");
   }
 
   async function forget(id: number) {
@@ -80,7 +84,17 @@ export function SettingsView() {
       )}
 
       <section className="flex flex-col gap-3 rounded-2xl border border-line bg-panel p-5">
-        <h2 className="font-display text-lg font-semibold">Time zone</h2>
+        <h2 className="font-display text-lg font-semibold">Home city and time zone</h2>
+        <label className="flex flex-col gap-1 text-sm">
+          <span className="text-muted">Home city for weather</span>
+          <input
+            value={homeCity}
+            onChange={(event) => setHomeCity(event.target.value)}
+            maxLength={80}
+            placeholder="For example: London"
+            className="h-11 rounded-xl border border-line bg-transparent px-3 text-base outline-none placeholder:text-muted focus:border-doom md:text-[15px]"
+          />
+        </label>
         <p className="text-sm text-muted">Your 07:00 briefing, routines and calendar day use this time zone.</p>
         <select
           value={timeZone}

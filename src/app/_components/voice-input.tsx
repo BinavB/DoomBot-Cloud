@@ -64,7 +64,7 @@ export function VoiceInput({ onTranscript }: VoiceInputProps) {
       onClick={toggle}
       aria-label={listening ? "Stop listening" : "Speak your message"}
       aria-pressed={listening}
-      className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-colors ${
+      className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-colors ${
         listening ? "bg-danger text-canvas" : "text-muted hover:bg-raised hover:text-ink"
       }`}
     >

@@ -175,6 +175,13 @@ const schema = `
   );
   CREATE INDEX IF NOT EXISTS user_memories_user_index ON user_memories (user_id, id);
 
+  CREATE TABLE IF NOT EXISTS user_locations (
+    user_id INTEGER PRIMARY KEY,
+    city TEXT NOT NULL,
+    latitude REAL NOT NULL,
+    longitude REAL NOT NULL
+  );
+
   CREATE TABLE IF NOT EXISTS user_timezones (
     user_id INTEGER PRIMARY KEY,
     time_zone TEXT NOT NULL

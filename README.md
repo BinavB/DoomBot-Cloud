@@ -18,6 +18,20 @@ Every person signs in with Google and gets a private account. Chats, Doombots, m
 - Alerts page and phone alerts with Web Push.
 - A daily token limit per account to cap AI cost.
 
+## Screenshots
+
+### Chat on desktop
+![Chat on desktop](docs/screenshots/chat-desktop.jpg)
+
+### Chat on a phone
+![Chat on a phone](docs/screenshots/chat-phone.jpg)
+
+### Doombots
+![Doombots](docs/screenshots/doombots.jpg)
+
+### Settings
+![Settings](docs/screenshots/settings.jpg)
+
 ## Run it locally
 
 ```bash
