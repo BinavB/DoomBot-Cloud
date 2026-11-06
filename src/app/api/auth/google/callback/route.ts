@@ -25,9 +25,9 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const user = await upsertGoogleUser(await finishLogin(code, attempt));
+    const { user, sessionVersion } = await upsertGoogleUser(await finishLogin(code, attempt));
     const response = redirectTo("/");
-    response.cookies.set(sessionCookieName, await createSessionToken(user.id), cookieOptions(sessionLifetimeSeconds));
+    response.cookies.set(sessionCookieName, await createSessionToken(user.id, sessionVersion), cookieOptions(sessionLifetimeSeconds));
     return response;
   } catch {
     return redirectTo("/login?error=failed");

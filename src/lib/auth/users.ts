@@ -17,15 +17,33 @@ export interface GoogleProfile {
 const activeWindowDays = 14;
 const seenRefreshMinutes = 60;
 
-export async function upsertGoogleUser(profile: GoogleProfile): Promise<User> {
-  const row = await queryRow<User>(
+export interface SignedInUser {
+  user: User;
+  sessionVersion: number;
+}
+
+export async function upsertGoogleUser(profile: GoogleProfile): Promise<SignedInUser> {
+  const row = await queryRow<User & { session_version: number }>(
     `INSERT INTO users (google_sub, email, name, picture) VALUES (?, ?, ?, ?)
      ON CONFLICT(google_sub) DO UPDATE SET email = excluded.email, name = excluded.name,
        picture = excluded.picture, last_seen_at = datetime('now')
-     RETURNING id, email, name, picture`,
+     RETURNING id, email, name, picture, session_version`,
     [profile.sub, profile.email, profile.name, profile.picture],
   );
-  return row as User;
+  const signedIn = row as User & { session_version: number };
+  return {
+    user: { id: signedIn.id, email: signedIn.email, name: signedIn.name, picture: signedIn.picture },
+    sessionVersion: signedIn.session_version,
+  };
+}
+
+export async function revokeSessions(userId: number): Promise<void> {
+  await runStatement("UPDATE users SET session_version = session_version + 1 WHERE id = ?", [userId]);
+}
+
+export async function findSessionUser(userId: number, version: number): Promise<User | null> {
+  const row = await queryRow<User>("SELECT id FROM users WHERE id = ? AND session_version = ?", [userId, version]);
+  return row ? findUser(userId) : null;
 }
 
 export async function findUser(userId: number): Promise<User | null> {

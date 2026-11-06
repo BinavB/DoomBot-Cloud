@@ -39,8 +39,8 @@ export async function proxy(request: NextRequest) {
   if (isPublic(pathname)) {
     return NextResponse.next();
   }
-  const userId = await readSessionToken(request.cookies.get(sessionCookieName)?.value);
-  if (userId !== null) {
+  const claims = await readSessionToken(request.cookies.get(sessionCookieName)?.value);
+  if (claims !== null) {
     return NextResponse.next();
   }
   if (isApi) {

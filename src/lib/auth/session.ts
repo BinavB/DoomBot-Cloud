@@ -31,33 +31,39 @@ function sameText(first: string, second: string): boolean {
   return difference === 0;
 }
 
-export async function createSessionToken(userId: number): Promise<string> {
+export interface SessionClaims {
+  userId: number;
+  version: number;
+}
+
+export async function createSessionToken(userId: number, version: number): Promise<string> {
   const secret = readSecret();
   if (!secret) {
     throw new Error("AUTH_SECRET must be set to at least 32 characters.");
   }
   const expiresAt = Math.floor(Date.now() / 1000) + sessionLifetimeSeconds;
-  const payload = `${userId}.${expiresAt}`;
+  const payload = `${userId}.${version}.${expiresAt}`;
   return `${payload}.${await sign(payload, secret)}`;
 }
 
-export async function readSessionToken(token: string | undefined): Promise<number | null> {
+export async function readSessionToken(token: string | undefined): Promise<SessionClaims | null> {
   const secret = readSecret();
   if (!token || !secret) {
     return null;
   }
   const parts = token.split(".");
-  if (parts.length !== 3) {
+  if (parts.length !== 4) {
     return null;
   }
-  const [userText, expiryText, signature] = parts;
-  if (!sameText(signature, await sign(`${userText}.${expiryText}`, secret))) {
+  const [userText, versionText, expiryText, signature] = parts;
+  if (!sameText(signature, await sign(`${userText}.${versionText}.${expiryText}`, secret))) {
     return null;
   }
   const userId = Number(userText);
+  const version = Number(versionText);
   const expiresAt = Number(expiryText);
-  if (!Number.isInteger(userId) || userId <= 0 || !Number.isFinite(expiresAt)) {
+  if (!Number.isInteger(userId) || userId <= 0 || !Number.isInteger(version) || !Number.isFinite(expiresAt)) {
     return null;
   }
-  return expiresAt > Date.now() / 1000 ? userId : null;
+  return expiresAt > Date.now() / 1000 ? { userId, version } : null;
 }
