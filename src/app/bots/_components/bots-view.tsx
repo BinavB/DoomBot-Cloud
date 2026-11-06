@@ -94,6 +94,13 @@ function formatClock(sqliteTime: string): string {
   );
 }
 
+function withIdleActivity<T extends { activity?: BotActivity }>(bot: T): T & { activity: BotActivity } {
+  return {
+    ...bot,
+    activity: bot.activity ?? { running: 0, total: 0, failed: 0, lastStatus: null, lastAt: null },
+  };
+}
+
 function activityLabel(activity: BotActivity): { text: string; style: string } {
   if (activity.running > 0) {
     return { text: "Working now", style: "text-signal" };
@@ -209,7 +216,9 @@ export function BotsView() {
   }
 
   function replaceBot(updated: Bot) {
-    setBots((current) => current.map((bot) => (bot.id === updated.id ? updated : bot)));
+    setBots((current) =>
+      current.map((bot) => (bot.id === updated.id ? { ...updated, activity: bot.activity } : bot)),
+    );
   }
 
   async function design(event: FormEvent<HTMLFormElement>) {
@@ -227,7 +236,7 @@ export function BotsView() {
         setError(data.error ?? data.skipped?.join(" ") ?? "No Doombots could be designed.");
         return;
       }
-      const designed = data.bots;
+      const designed = data.bots.map(withIdleActivity);
       setBots((current) => [...current, ...designed]);
       setPreferences("");
       select(designed[0]);
@@ -351,7 +360,7 @@ export function BotsView() {
       setError(data.error ?? "The Doombot could not be created.");
       return;
     }
-    const bot = data.bot;
+    const bot = withIdleActivity(data.bot);
     setBots((current) => [...current, bot]);
     setNewName("");
     setNewInstructions("");
