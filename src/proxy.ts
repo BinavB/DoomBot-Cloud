@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { readSessionToken, sessionCookieName } from "@/lib/auth/session";
 
-const publicPaths = ["/login", "/privacy", "/terms", "/api/health", "/api/auth/logout", "/api/cron", "/manifest.webmanifest", "/sw.js", "/icon.svg", "/icon-512.png", "/apple-icon.png"];
+const publicPaths = ["/login", "/privacy", "/terms", "/api/health", "/robots.txt", "/api/auth/logout", "/api/cron", "/manifest.webmanifest", "/sw.js", "/icon.svg", "/icon-512.png", "/apple-icon.png"];
 const publicPrefixes = ["/api/auth/google/", "/share/", "/api/share/"];
 const safeMethods = ["GET", "HEAD", "OPTIONS"];
 
