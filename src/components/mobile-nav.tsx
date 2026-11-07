@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { DoomMark } from "@/components/doom-mark";
 import { Icon } from "@/components/icon";
 import { SidebarChats } from "@/components/sidebar-chats";
+import { SidebarPages } from "@/components/sidebar-pages";
 import type { NavData } from "@/components/use-nav-data";
 import { UserMenu } from "@/components/user-menu";
 
@@ -84,8 +85,11 @@ export function MobileNav({ title, pendingCount, unreadCount, account }: NavData
               <Icon name="close" size={22} />
             </button>
           </div>
-          <SidebarChats onNavigate={close} />
-          <UserMenu account={account} pendingCount={pendingCount} unreadCount={unreadCount} />
+          <SidebarChats
+            onNavigate={close}
+            pages={<SidebarPages pendingCount={pendingCount} unreadCount={unreadCount} onNavigate={close} />}
+          />
+          <UserMenu account={account} pendingCount={pendingCount} unreadCount={unreadCount} showPages={false} />
         </nav>
       </div>
     </>

@@ -6,12 +6,14 @@ import { useSyncExternalStore } from "react";
 import { Icon } from "@/components/icon";
 import { installApp, isInstalled, subscribeInstall } from "@/components/install-prompt";
 import { Menu, type MenuItem } from "@/components/menu";
+import { pageLinks } from "@/components/page-links";
 import type { Account } from "@/components/use-nav-data";
 
 interface UserMenuProps {
   account: Account | null;
   pendingCount: number;
   unreadCount: number;
+  showPages?: boolean;
 }
 
 function Avatar({ account, size }: { account: Account; size: number }) {
@@ -40,7 +42,7 @@ function Avatar({ account, size }: { account: Account; size: number }) {
   );
 }
 
-export function UserMenu({ account, pendingCount, unreadCount }: UserMenuProps) {
+export function UserMenu({ account, pendingCount, unreadCount, showPages = true }: UserMenuProps) {
   const router = useRouter();
   const installed = useSyncExternalStore(subscribeInstall, isInstalled, () => false);
 
@@ -54,13 +56,8 @@ export function UserMenu({ account, pendingCount, unreadCount }: UserMenuProps) 
   }
 
   const items: MenuItem[] = [
-    { label: "Doombots", icon: "smart_toy", href: "/bots" },
-    { label: "Alerts", icon: "notifications", href: "/alerts", badge: unreadCount },
-    { label: "Briefing", icon: "wb_twilight", href: "/briefing" },
-    { label: "To-do", icon: "task_alt", href: "/todos" },
-    { label: "Approvals", icon: "verified_user", href: "/approvals", badge: pendingCount },
-    { label: "Connections", icon: "hub", href: "/connections" },
-    { label: "Settings", icon: "tune", href: "/settings", separatorBefore: true },
+    ...(showPages ? pageLinks(pendingCount, unreadCount) : []),
+    { label: "Settings", icon: "tune", href: "/settings", separatorBefore: showPages },
     ...(installed ? [] : [{ label: "Install app", hint: "Add DOOMBOT as a shortcut", icon: "install_mobile", onSelect: () => void installApp() }]),
     { label: "Sign out", icon: "logout", separatorBefore: true, onSelect: () => void signOut() },
   ];

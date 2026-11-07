@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
 import { chatMenuItems } from "@/components/chat-menu-items";
 import { createChat, selectChat, startChats, useChatState } from "@/components/chat-store";
 import { Icon } from "@/components/icon";
@@ -20,7 +20,12 @@ function noopSubscribe(): () => void {
   return () => undefined;
 }
 
-export function SidebarChats({ onNavigate }: { onNavigate?: () => void }) {
+interface SidebarChatsProps {
+  onNavigate?: () => void;
+  pages?: ReactNode;
+}
+
+export function SidebarChats({ onNavigate, pages }: SidebarChatsProps) {
   const { conversations, selectedId, ready } = useChatState();
   const router = useRouter();
   const pathname = usePathname();
@@ -80,6 +85,7 @@ export function SidebarChats({ onNavigate }: { onNavigate?: () => void }) {
         <Icon name="edit_square" size={18} />
         New chat
       </button>
+      {pages}
       <input
         type="search"
         value={query}
