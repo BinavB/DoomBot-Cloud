@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { SidebarNav } from "@/components/sidebar-nav";
+import { StatusPill } from "@/components/status-pill";
 
 interface AppShellProps {
   title: string;
@@ -19,6 +20,7 @@ export function AppShell({ title, children, bare = false }: AppShellProps) {
           <h1 className="font-display text-base font-semibold">{title}</h1>
         </header>
         <main className="min-h-0 flex-1 overflow-y-auto">{children}</main>
+        <StatusPill floating />
       </div>
     </div>
   );

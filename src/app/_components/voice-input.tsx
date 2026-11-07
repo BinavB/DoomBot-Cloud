@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { Icon } from "@/components/icon";
+import { announceStatus, startStatus, type StatusHandle } from "@/components/status-store";
 import { speechRecognitionConstructor, type SpeechRecognitionLike } from "@/lib/speech";
 
 interface VoiceInputProps {
@@ -16,6 +17,8 @@ export function VoiceInput({ onTranscript }: VoiceInputProps) {
   );
   const [listening, setListening] = useState(false);
   const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
+  const statusRef = useRef<StatusHandle | null>(null);
+  const heardRef = useRef(false);
   const transcriptRef = useRef(onTranscript);
 
   useEffect(() => {
@@ -44,13 +47,25 @@ export function VoiceInput({ onTranscript }: VoiceInputProps) {
         .join(" ")
         .trim();
       if (text) {
+        heardRef.current = true;
         transcriptRef.current(text);
+        statusRef.current?.done("Voice added to your message");
       }
     };
-    recognition.onend = () => setListening(false);
-    recognition.onerror = () => setListening(false);
+    recognition.onend = () => {
+      setListening(false);
+      if (!heardRef.current) {
+        statusRef.current?.done("Stopped listening");
+      }
+    };
+    recognition.onerror = () => {
+      setListening(false);
+      announceStatus("Couldn't hear you. Try again", "error");
+    };
     recognitionRef.current = recognition;
     setListening(true);
+    heardRef.current = false;
+    statusRef.current = startStatus("Listening");
     recognition.start();
   }
 

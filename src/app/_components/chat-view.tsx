@@ -10,6 +10,8 @@ import { announceApprovalsChanged } from "@/components/events";
 import { DoomMark } from "@/components/doom-mark";
 import { Icon } from "@/components/icon";
 import { Markdown } from "@/components/markdown";
+import { StatusPill } from "@/components/status-pill";
+import { announceStatus } from "@/components/status-store";
 import type { Conversation } from "@/lib/conversations";
 
 interface ChatLine {
@@ -359,9 +361,11 @@ export function ChatView() {
       if (isPdf) {
         setPendingImage(null);
         setPendingPdf(result ? { name: file.name, data: result } : null);
+        announceStatus("PDF attached");
       } else {
         setPendingPdf(null);
         setPendingImage(result);
+        announceStatus("Image attached");
       }
     };
     reader.readAsDataURL(file);
@@ -478,6 +482,7 @@ export function ChatView() {
     try {
       await navigator.clipboard.writeText(line.content);
       setCopiedId(line.id);
+      announceStatus("Copied to clipboard");
       setTimeout(() => setCopiedId((current) => (current === line.id ? null : current)), 1500);
     } catch {
       setError("Copy failed. Select the text and copy it manually.");
@@ -594,7 +599,10 @@ export function ChatView() {
                         {canSpeak() && (
                           <button
                             type="button"
-                            onClick={() => speak(line.content)}
+                            onClick={() => {
+                              speak(line.content);
+                              announceStatus("Reading aloud");
+                            }}
                             aria-label="Read this reply aloud"
                             className="rounded-md px-2 py-1 text-xs text-muted opacity-100 transition-opacity hover:bg-raised hover:text-ink md:opacity-0 md:group-hover:opacity-100 md:focus-visible:opacity-100"
                           >
@@ -674,6 +682,7 @@ export function ChatView() {
         )}
 
         <div className="shrink-0 bg-canvas px-3 pt-2 pb-[max(0.75rem,env(safe-area-inset-bottom))] md:border-t md:border-line md:px-6 md:pt-3 md:pb-4">
+          <StatusPill />
           {(pendingImage || pendingPdf || imageError) && (
             <div className="mx-auto mb-2 flex w-full max-w-3xl items-center gap-3 text-sm">
               {pendingImage && (
@@ -715,8 +724,8 @@ export function ChatView() {
                 resizeComposer();
               }}
               onKeyDown={handleKeyDown}
-              placeholder="Message DOOMBOT"
-              className="max-h-[200px] min-h-[40px] flex-1 resize-none bg-transparent px-3 py-2 text-base leading-relaxed outline-none placeholder:text-muted md:text-[15px]"
+              placeholder="Ask DOOMBOT"
+              className="max-h-[200px] min-h-[40px] min-w-0 flex-1 resize-none bg-transparent px-2 py-2 text-base sm:px-3 leading-relaxed outline-none placeholder:text-muted md:text-[15px]"
             />
             {!sending && (
               <button

@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 interface Memory {
@@ -35,7 +36,10 @@ interface SettingsData {
 export function SettingsView() {
   const [data, setData] = useState<SettingsData | null>(null);
   const [instructions, setInstructions] = useState("");
+  const router = useRouter();
   const [message, setMessage] = useState<string | null>(null);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [deleteText, setDeleteText] = useState("");
   const [timeZone, setTimeZone] = useState("Asia/Dubai");
   const [homeCity, setHomeCity] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -62,6 +66,19 @@ export function SettingsView() {
     });
     const saved = (await response.json().catch(() => ({}))) as { error?: string };
     setMessage(response.ok ? "Saved. Briefings and routines now follow these settings." : saved.error ?? "Could not save. Try again.");
+  }
+
+  async function deleteEverything() {
+    const response = await fetch("/api/account/delete", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ confirm: "DELETE" }),
+    });
+    if (response.ok) {
+      router.replace("/login");
+    } else {
+      setError("Your data could not be deleted. Try again.");
+    }
   }
 
   async function forget(id: number) {
@@ -155,6 +172,54 @@ export function SettingsView() {
             </li>
           ))}
         </ul>
+      </section>
+
+      <section className="flex flex-col gap-3 rounded-2xl border border-danger/40 bg-panel p-5">
+        <h2 className="font-display text-lg font-semibold">Delete my data</h2>
+        <p className="text-sm text-muted">
+          This permanently erases your chats, Doombots, memories, notes, to-dos, alerts and settings, and signs you out. It cannot be undone.
+        </p>
+        {!confirmingDelete ? (
+          <button
+            type="button"
+            onClick={() => setConfirmingDelete(true)}
+            className="h-10 w-fit rounded-xl border border-danger/60 px-4 text-sm font-semibold text-danger hover:bg-raised"
+          >
+            Delete my data
+          </button>
+        ) : (
+          <div className="flex flex-col gap-3">
+            <label className="flex flex-col gap-1 text-sm">
+              <span className="text-muted">Type DELETE to confirm</span>
+              <input
+                value={deleteText}
+                onChange={(event) => setDeleteText(event.target.value)}
+                autoComplete="off"
+                className="h-11 rounded-xl border border-line bg-transparent px-3 text-base outline-none focus:border-danger md:text-[15px]"
+              />
+            </label>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                disabled={deleteText !== "DELETE"}
+                onClick={() => void deleteEverything()}
+                className="h-10 rounded-xl bg-danger px-4 text-sm font-semibold text-canvas disabled:opacity-40"
+              >
+                Delete everything
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setConfirmingDelete(false);
+                  setDeleteText("");
+                }}
+                className="h-10 rounded-xl px-4 text-sm text-muted hover:bg-raised"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
       </section>
     </div>
   );

@@ -12,20 +12,6 @@ export function UserMenu({ account }: { account: Account | null }) {
     router.replace("/login");
   }
 
-  async function deleteEverything() {
-    if (window.prompt("This permanently deletes all your DOOMBOT data. Type DELETE to confirm.") !== "DELETE") {
-      return;
-    }
-    const response = await fetch("/api/account/delete", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ confirm: "DELETE" }),
-    });
-    if (response.ok) {
-      router.replace("/login");
-    }
-  }
-
   if (!account) {
     return null;
   }
@@ -45,15 +31,6 @@ export function UserMenu({ account }: { account: Account | null }) {
       <a href="/api/account/export" aria-label="Export my data" title="Export my data" className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-muted hover:bg-raised hover:text-ink">
         <Icon name="download" size={20} />
       </a>
-      <button
-        type="button"
-        onClick={() => void deleteEverything()}
-        aria-label="Delete my data"
-        title="Delete my data"
-        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-muted hover:bg-raised hover:text-danger"
-      >
-        <Icon name="delete_forever" size={20} />
-      </button>
       <button
         type="button"
         onClick={() => void signOut()}

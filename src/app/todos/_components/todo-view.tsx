@@ -83,7 +83,7 @@ export function TodoView() {
         <button
           type="submit"
           disabled={title.trim().length === 0}
-          className="h-11 rounded-xl bg-doom px-5 text-sm font-semibold text-canvas disabled:opacity-40"
+          className="h-11 shrink-0 whitespace-nowrap rounded-xl bg-doom px-4 text-sm font-semibold text-canvas disabled:opacity-40 sm:px-5"
         >
           Add task
         </button>
