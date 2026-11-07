@@ -20,12 +20,15 @@ const userTables = [
   "user_settings",
   "user_timezones",
   "notes",
+  "rate_limits",
 ];
+
+const credentialTables = ["google_tokens", "rate_limits"];
 
 export async function exportAccountData(): Promise<Record<string, unknown[]>> {
   const userId = currentUserId();
   const exported: Record<string, unknown[]> = {};
-  for (const table of userTables) {
+  for (const table of userTables.filter((name) => !credentialTables.includes(name))) {
     exported[table] = await queryRows(`SELECT * FROM ${table} WHERE user_id = ?`, [userId]);
   }
   return exported;

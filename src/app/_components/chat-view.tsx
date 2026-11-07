@@ -636,7 +636,7 @@ export function ChatView() {
 
             {shareNotice && (
               <div role="status" className="flex flex-col gap-2 rounded-xl border border-doom/50 px-4 py-3 text-sm">
-                <p>Link copied. Anyone with this link can read this chat, so share it only with people you trust.</p>
+                <p>Link copied. Anyone with this link can read this chat for 30 days, so share it only with people you trust.</p>
                 <p className="break-all text-xs text-muted">{shareNotice.url}</p>
                 <div className="flex gap-3">
                   <button type="button" onClick={() => void navigator.clipboard.writeText(shareNotice.url)} className="font-medium text-doom underline underline-offset-2">

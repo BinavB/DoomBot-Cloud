@@ -11,7 +11,8 @@ Every person signs in with Google and gets a private account. Chats, Doombots, m
 - Chat agent with an approval step for risky actions, using Gemini first and free backup providers when its daily limit runs out.
 - Streaming replies with a stop button, multiple chats with search, edit and regenerate, voice input and read-aloud.
 - Attach images and PDFs, switch between Fast and Think answers, and share a chat with a read-only link.
-- Custom instructions, account memory and a time zone for each person.
+- Custom instructions, account memory, a time zone and a home city for each person.
+- Stored Google tokens are encrypted, share links expire after 30 days, and the chat rate limit survives restarts.
 - Morning briefing at 07:00 Dubai time with weather, headlines, calendar, unread email and to-dos.
 - Doombots with private memory, assigned tasks and routines that run hourly, daily, on weekdays, weekly or monthly.
 - Read-only Google Calendar, Gmail and Tasks, connected per account.
@@ -31,6 +32,14 @@ Every person signs in with Google and gets a private account. Chats, Doombots, m
 
 ### Settings
 ![Settings](docs/screenshots/settings.jpg)
+
+## Checks
+
+```bash
+npm test
+```
+
+The tests cover token encryption, account privacy, sharing, the rate limit and chat history size. GitHub runs them, plus type checks, lint and a build, on every push.
 
 ## Run it locally
 

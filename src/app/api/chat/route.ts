@@ -31,7 +31,7 @@ function sseEvent(payload: unknown): Uint8Array {
 
 export const POST = withUser(async (request: Request) => {
   const userId = currentUserId();
-  if (!takeChatSlot(userId)) {
+  if (!(await takeChatSlot(userId))) {
     return NextResponse.json({ error: "You are sending messages too fast. Wait a minute and try again." }, { status: 429 });
   }
   const body = (await request.json()) as {

@@ -7,6 +7,7 @@ export interface SharedChat {
   messages: { role: "user" | "assistant"; content: string }[];
 }
 
+export const shareLifetimeDays = 30;
 const tokenPattern = /^[A-Za-z0-9_-]{20,64}$/;
 
 export function isShareToken(value: string): boolean {
@@ -40,8 +41,8 @@ export async function revokeShare(conversationId: string): Promise<void> {
 
 export async function readSharedChat(token: string): Promise<SharedChat | null> {
   const share = await queryRow<{ user_id: number; conversation_id: string }>(
-    "SELECT user_id, conversation_id FROM shared_chats WHERE token = ?",
-    [token],
+    "SELECT user_id, conversation_id FROM shared_chats WHERE token = ? AND created_at >= datetime('now', ?)",
+    [token, `-${shareLifetimeDays} days`],
   );
   if (!share) {
     return null;

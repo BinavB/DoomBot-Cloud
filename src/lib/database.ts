@@ -158,6 +158,13 @@ const schema = `
     UNIQUE (user_id, conversation_id)
   );
 
+  CREATE TABLE IF NOT EXISTS rate_limits (
+    user_id INTEGER NOT NULL,
+    window_start INTEGER NOT NULL,
+    hits INTEGER NOT NULL,
+    PRIMARY KEY (user_id, window_start)
+  );
+
   CREATE TABLE IF NOT EXISTS notes (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL,

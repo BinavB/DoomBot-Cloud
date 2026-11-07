@@ -18,6 +18,7 @@ jobs:
       - run: npx next typegen
       - run: npx tsc --noEmit
       - run: npx eslint
+      - run: npm test
       - run: npm run build
         env:
           AUTH_SECRET: ci-only-secret-ci-only-secret-ci-only

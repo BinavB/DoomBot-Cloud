@@ -1,5 +1,6 @@
 import { randomBytes } from "node:crypto";
 import { currentUserId } from "@/lib/auth/context";
+import { openSecret, sealSecret } from "@/lib/secret-box";
 import { queryRow, runStatement } from "@/lib/database";
 import { config } from "@/lib/config";
 import { AgentError } from "@/lib/errors";
@@ -73,7 +74,7 @@ export async function exchangeCode(code: string): Promise<void> {
   await runStatement(
     `INSERT INTO google_tokens (user_id, refresh_token, updated_at) VALUES (?, ?, datetime('now'))
      ON CONFLICT(user_id) DO UPDATE SET refresh_token = excluded.refresh_token, updated_at = excluded.updated_at`,
-    [userId, tokens.refresh_token],
+    [userId, sealSecret(tokens.refresh_token)],
   );
   accessTokenCache.set(userId, { token: tokens.access_token, expiresAt: Date.now() + tokens.expires_in * 1000 });
 }
@@ -82,7 +83,14 @@ async function storedRefreshToken(userId: number): Promise<string | null> {
   const row = await queryRow<{ refresh_token: string }>("SELECT refresh_token FROM google_tokens WHERE user_id = ?", [
     userId,
   ]);
-  return row ? row.refresh_token : null;
+  if (!row) {
+    return null;
+  }
+  const token = openSecret(row.refresh_token);
+  if (token !== null && !row.refresh_token.startsWith("enc:v1:")) {
+    await runStatement("UPDATE google_tokens SET refresh_token = ? WHERE user_id = ?", [sealSecret(token), userId]);
+  }
+  return token;
 }
 
 export async function isGoogleConnected(): Promise<boolean> {
