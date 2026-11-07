@@ -12,6 +12,8 @@ export interface MenuItem {
   download?: boolean;
   danger?: boolean;
   selected?: boolean;
+  badge?: number;
+  separatorBefore?: boolean;
   onSelect?: () => void;
 }
 
@@ -23,9 +25,10 @@ interface MenuProps {
   align?: "start" | "end";
   triggerClassName?: string;
   width?: string;
+  header?: ReactNode;
 }
 
-export function Menu({ label, trigger, items, direction = "down", align = "end", triggerClassName = "", width = "w-64" }: MenuProps) {
+export function Menu({ label, trigger, items, direction = "down", align = "end", triggerClassName = "", width = "w-64", header }: MenuProps) {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
   const menuId = useId();
@@ -62,6 +65,9 @@ export function Menu({ label, trigger, items, direction = "down", align = "end",
         <span className="font-medium">{item.label}</span>
         {item.hint && <span className="text-xs leading-snug text-muted">{item.hint}</span>}
       </span>
+      {item.badge !== undefined && item.badge > 0 && (
+        <span className="mt-0.5 rounded-full bg-doom px-2 py-0.5 text-xs font-semibold text-canvas">{item.badge}</span>
+      )}
       {item.selected && <Icon name="check" size={18} className="mt-0.5 text-doom" />}
     </>
   );
@@ -87,32 +93,35 @@ export function Menu({ label, trigger, items, direction = "down", align = "end",
             direction === "up" ? "bottom-full mb-2" : "top-full mt-2"
           } ${align === "end" ? "right-0" : "left-0"}`}
         >
-          {items.map((item) =>
-            item.href ? (
-              item.download ? (
-                <a key={item.label} role="menuitem" href={item.href} download className={itemClass(item)} onClick={() => setOpen(false)}>
-                  {content(item)}
-                </a>
+          {header}
+          {items.map((item) => (
+            <div key={item.label}>
+              {item.separatorBefore && <div role="separator" className="my-1 border-t border-line" />}
+              {item.href ? (
+                item.download ? (
+                  <a role="menuitem" href={item.href} download className={itemClass(item)} onClick={() => setOpen(false)}>
+                    {content(item)}
+                  </a>
+                ) : (
+                  <Link role="menuitem" href={item.href} className={itemClass(item)} onClick={() => setOpen(false)}>
+                    {content(item)}
+                  </Link>
+                )
               ) : (
-                <Link key={item.label} role="menuitem" href={item.href} className={itemClass(item)} onClick={() => setOpen(false)}>
+                <button
+                  type="button"
+                  role="menuitem"
+                  className={itemClass(item)}
+                  onClick={() => {
+                    setOpen(false);
+                    item.onSelect?.();
+                  }}
+                >
                   {content(item)}
-                </Link>
-              )
-            ) : (
-              <button
-                key={item.label}
-                type="button"
-                role="menuitem"
-                className={itemClass(item)}
-                onClick={() => {
-                  setOpen(false);
-                  item.onSelect?.();
-                }}
-              >
-                {content(item)}
-              </button>
-            ),
-          )}
+                </button>
+              )}
+            </div>
+          ))}
         </div>
       )}
     </div>

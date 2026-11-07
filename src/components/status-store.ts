@@ -72,8 +72,8 @@ export function startStatus(label: string): StatusHandle {
   };
 }
 
-export function announceStatus(label: string, tone: Exclude<StatusTone, "working"> = "done"): void {
+export function announceStatus(label: string, tone: Exclude<StatusTone, "working"> = "done", visibleMilliseconds?: number): void {
   const id = nextId++;
   publish({ id, tone, label });
-  scheduleHide(id, tone === "error" ? errorVisibleMilliseconds : doneVisibleMilliseconds);
+  scheduleHide(id, visibleMilliseconds ?? (tone === "error" ? errorVisibleMilliseconds : doneVisibleMilliseconds));
 }

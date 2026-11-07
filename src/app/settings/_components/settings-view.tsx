@@ -1,7 +1,10 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
+import { Icon } from "@/components/icon";
+import { installApp, isInstalled, subscribeInstall } from "@/components/install-prompt";
 
 interface Memory {
   id: number;
@@ -37,6 +40,7 @@ export function SettingsView() {
   const [data, setData] = useState<SettingsData | null>(null);
   const [instructions, setInstructions] = useState("");
   const router = useRouter();
+  const installed = useSyncExternalStore(subscribeInstall, isInstalled, () => false);
   const [message, setMessage] = useState<string | null>(null);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [deleteText, setDeleteText] = useState("");
@@ -172,6 +176,36 @@ export function SettingsView() {
             </li>
           ))}
         </ul>
+      </section>
+
+      <section className="flex flex-col gap-3 rounded-2xl border border-line bg-panel p-5">
+        <h2 className="font-display text-lg font-semibold">Install as a shortcut</h2>
+        <p className="text-sm text-muted">
+          {installed ? "DOOMBOT is installed on this device." : "Add DOOMBOT to your home screen or desktop so it opens like an app."}
+        </p>
+        {!installed && (
+          <button
+            type="button"
+            onClick={() => void installApp()}
+            className="flex h-10 w-fit items-center gap-2 rounded-xl border border-line px-4 text-sm font-medium hover:bg-raised"
+          >
+            <Icon name="install_mobile" size={18} />
+            Install app
+          </button>
+        )}
+      </section>
+
+      <section className="flex flex-col gap-3 rounded-2xl border border-line bg-panel p-5">
+        <h2 className="font-display text-lg font-semibold">About and legal</h2>
+        <p className="text-sm text-muted">How DOOMBOT handles your data, and the rules for using it.</p>
+        <div className="flex flex-wrap gap-3 text-sm">
+          <Link href="/privacy" className="font-medium text-doom underline underline-offset-2">
+            Privacy
+          </Link>
+          <Link href="/terms" className="font-medium text-doom underline underline-offset-2">
+            Terms
+          </Link>
+        </div>
       </section>
 
       <section id="delete-data" className="flex scroll-mt-4 flex-col gap-3 rounded-2xl border border-danger/40 bg-panel p-5">

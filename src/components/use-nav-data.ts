@@ -6,6 +6,7 @@ import { approvalsChangedEvent } from "@/components/events";
 export interface Account {
   name: string;
   email: string;
+  picture: string | null;
 }
 
 export interface NavData {

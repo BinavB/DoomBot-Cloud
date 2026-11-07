@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { DoomMark } from "@/components/doom-mark";
 import { Icon } from "@/components/icon";
-import { NavList } from "@/components/nav-list";
+import { SidebarChats } from "@/components/sidebar-chats";
 import type { NavData } from "@/components/use-nav-data";
 import { UserMenu } from "@/components/user-menu";
 
@@ -84,10 +84,8 @@ export function MobileNav({ title, pendingCount, unreadCount, account }: NavData
               <Icon name="close" size={22} />
             </button>
           </div>
-          <div className="min-h-0 flex-1 overflow-y-auto">
-            <NavList pendingCount={pendingCount} unreadCount={unreadCount} roomy onNavigate={close} />
-          </div>
-          <UserMenu account={account} />
+          <SidebarChats onNavigate={close} />
+          <UserMenu account={account} pendingCount={pendingCount} unreadCount={unreadCount} />
         </nav>
       </div>
     </>

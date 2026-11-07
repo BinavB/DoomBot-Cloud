@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { DoomMark } from "@/components/doom-mark";
 import { MobileNav } from "@/components/mobile-nav";
-import { NavList } from "@/components/nav-list";
+import { SidebarChats } from "@/components/sidebar-chats";
 import { useNavData } from "@/components/use-nav-data";
 import { UserMenu } from "@/components/user-menu";
 
@@ -20,10 +20,8 @@ export function SidebarNav({ title }: { title: string }) {
           <DoomMark size={30} />
           <span className="font-display text-lg font-semibold tracking-tight">DOOMBOT</span>
         </Link>
-        <div className="min-h-0 flex-1 overflow-y-auto">
-          <NavList pendingCount={navData.pendingCount} unreadCount={navData.unreadCount} />
-        </div>
-        <UserMenu account={navData.account} />
+        <SidebarChats />
+        <UserMenu account={navData.account} pendingCount={navData.pendingCount} unreadCount={navData.unreadCount} />
       </nav>
       <MobileNav title={title} {...navData} />
     </>
