@@ -43,6 +43,35 @@ export function getChatState(): ChatState {
 }
 
 const jsonHeaders = { "Content-Type": "application/json" };
+const lastChatKey = "doombot.lastChat";
+
+function readLastChat(): string | null {
+  try {
+    return window.localStorage.getItem(lastChatKey);
+  } catch {
+    return null;
+  }
+}
+
+function rememberChat(id: string | null): void {
+  try {
+    if (id === null) {
+      window.localStorage.removeItem(lastChatKey);
+    } else {
+      window.localStorage.setItem(lastChatKey, id);
+    }
+  } catch {
+    return;
+  }
+}
+
+function restoredChatId(conversations: Conversation[]): string | null {
+  const remembered = readLastChat();
+  if (remembered && conversations.some((item) => item.id === remembered)) {
+    return remembered;
+  }
+  return conversations[0]?.id ?? null;
+}
 
 export async function refreshChats(): Promise<void> {
   const response = await fetch("/api/conversations");
@@ -56,7 +85,7 @@ export function startChats(): void {
   }
   started = true;
   refreshChats()
-    .then(() => set({ ready: true, selectedId: state.selectedId ?? state.conversations[0]?.id ?? null }))
+    .then(() => set({ ready: true, selectedId: state.selectedId ?? restoredChatId(state.conversations) }))
     .catch(() => {
       started = false;
       set({ ready: true, error: "Chats could not load. Reload the page to try again." });
@@ -67,6 +96,7 @@ export function selectChat(id: string): void {
   if (state.busy) {
     return;
   }
+  rememberChat(id);
   set({ selectedId: id, error: null });
 }
 
@@ -89,6 +119,7 @@ export async function createChat(): Promise<string | null> {
     set({ error: data.error ?? "A new chat could not be started." });
     return null;
   }
+  rememberChat(data.conversation.id);
   set({ conversations: [data.conversation, ...state.conversations], selectedId: data.conversation.id, error: null });
   return data.conversation.id;
 }
@@ -109,7 +140,9 @@ export async function deleteChat(id: string): Promise<void> {
     return;
   }
   const remaining = state.conversations.filter((item) => item.id !== id);
-  set({ conversations: remaining, selectedId: state.selectedId === id ? (remaining[0]?.id ?? null) : state.selectedId });
+  const selectedId = state.selectedId === id ? (remaining[0]?.id ?? null) : state.selectedId;
+  rememberChat(selectedId);
+  set({ conversations: remaining, selectedId });
 }
 
 export async function shareChat(id: string): Promise<void> {

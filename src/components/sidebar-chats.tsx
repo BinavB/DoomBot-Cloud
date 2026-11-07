@@ -46,10 +46,14 @@ export function SidebarChats({ onNavigate, pages }: SidebarChatsProps) {
     }
   }
 
-  async function startNew() {
-    await createChat();
+  const onChatPage = pathname === "/";
+
+  async function handlePrimary() {
+    if (onChatPage) {
+      await createChat();
+    }
     onNavigate?.();
-    if (pathname !== "/") {
+    if (!onChatPage) {
       router.push("/");
     }
   }
@@ -79,11 +83,11 @@ export function SidebarChats({ onNavigate, pages }: SidebarChatsProps) {
     <div className="flex min-h-0 flex-1 flex-col gap-2">
       <button
         type="button"
-        onClick={() => void startNew()}
+        onClick={() => void handlePrimary()}
         className="flex h-10 items-center gap-2 rounded-xl border border-line px-3 text-sm font-medium hover:bg-raised"
       >
-        <Icon name="edit_square" size={18} />
-        New chat
+        <Icon name={onChatPage ? "edit_square" : "chat"} size={18} />
+        {onChatPage ? "New chat" : "Chat"}
       </button>
       {pages}
       <input
