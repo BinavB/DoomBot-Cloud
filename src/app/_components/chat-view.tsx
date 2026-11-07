@@ -9,7 +9,6 @@ import { useChatHistory } from "@/app/_components/chat/use-chat-history";
 import { useChatScroll } from "@/app/_components/chat/use-chat-scroll";
 import { createChat, dismissShareNotice, refreshChats, setChatBusy, setChatError, setMode, stopSharing, useChatState } from "@/components/chat-store";
 import { announceApprovalsChanged } from "@/components/events";
-import { Icon } from "@/components/icon";
 import { announceStatus, startStatus } from "@/components/status-store";
 import { readEvents } from "@/lib/chat-stream";
 import { speak, stopSpeaking } from "@/lib/speech";
@@ -17,7 +16,7 @@ import { speak, stopSpeaking } from "@/lib/speech";
 const composerMaxHeight = 200;
 
 export function ChatView() {
-  const { conversations, selectedId, ready, busy, mode, error, shareNotice } = useChatState();
+  const { selectedId, ready, busy, mode, error, shareNotice } = useChatState();
   const history = useChatHistory(selectedId, ready, busy);
   const attachments = useAttachments();
   const { scrollRef, endRef, showJump, handleScroll, pinToBottom, jumpToLatest } = useChatScroll(history.lines);
@@ -35,7 +34,6 @@ export function ChatView() {
   const lines = history.lines;
   const visible = visibleLines(lines, busy);
   const empty = history.loaded && lines.length === 0 && !busy;
-  const selectedTitle = conversations.find((item) => item.id === selectedId)?.title ?? "New chat";
 
   function resizeComposer() {
     const element = composerRef.current;
@@ -251,13 +249,6 @@ export function ChatView() {
 
   return (
     <div className="relative flex h-full min-h-0 min-w-0 flex-1 flex-col">
-      <div className="flex h-11 shrink-0 items-center gap-2 border-b border-line px-3 md:hidden">
-        <span className="min-w-0 flex-1 truncate text-center text-sm font-medium">{selectedTitle}</span>
-        <button type="button" onClick={() => void createChat()} aria-label="New chat" className="flex h-8 w-8 items-center justify-center rounded-lg text-muted hover:bg-raised">
-          <Icon name="edit_square" size={18} />
-        </button>
-      </div>
-
       <div ref={scrollRef} onScroll={handleScroll} className="min-h-0 flex-1 overflow-y-auto">
         <ChatMessages
           lines={visible}
