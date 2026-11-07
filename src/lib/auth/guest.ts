@@ -37,7 +37,8 @@ async function existingGoogleUserId(sub: string): Promise<number | null> {
 export async function claimGuestAccount(guestId: number, profile: GoogleProfile): Promise<SignedInUser> {
   const existingId = await existingGoogleUserId(profile.sub);
   if (existingId === null) {
-    await runStatement("UPDATE users SET google_sub = ?, email = ?, name = ?, picture = ?, last_seen_at = datetime('now') WHERE id = ?", [
+    await runStatement(`UPDATE users SET google_sub = ?, email = ?, name = ?, picture = ?, last_seen_at = datetime('now'),
+       session_version = session_version + 1 WHERE id = ?`, [
       profile.sub,
       profile.email,
       profile.name,

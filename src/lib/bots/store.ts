@@ -280,7 +280,9 @@ export async function updateBotDetails(
 
 export async function listRoutineBots(): Promise<Bot[]> {
   const rows = await queryRows<BotRow>(
-    "SELECT * FROM bots WHERE routine_enabled = 1 AND routine IS NOT NULL AND routine_time IS NOT NULL",
+    `SELECT b.* FROM bots b JOIN users u ON u.id = b.user_id
+     WHERE b.routine_enabled = 1 AND b.routine IS NOT NULL AND b.routine_time IS NOT NULL
+       AND u.google_sub NOT LIKE 'guest:%'`,
   );
   return rows.map(toBot);
 }

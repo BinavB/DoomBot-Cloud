@@ -3,7 +3,8 @@ import { runAsUser } from "@/lib/auth/context";
 import { claimGuestAccount, createGuestUser } from "@/lib/auth/guest";
 import { findSession, findUser, listActiveUsers, upsertGoogleUser } from "@/lib/auth/users";
 import { createConversation, listConversations } from "@/lib/conversations";
-import { queryRow } from "@/lib/database";
+import { listRoutineBots } from "@/lib/bots/store";
+import { queryRow, runStatement } from "@/lib/database";
 import { addTodo, listTodos } from "@/lib/todos";
 
 const zone = "Asia/Dubai";
@@ -23,14 +24,21 @@ describe("guest accounts", () => {
   it("leaves guests out of scheduled work", async () => {
     const { user } = await createGuestUser();
     expect((await listActiveUsers()).some((active) => active.id === user.id)).toBe(false);
+    await runStatement(
+      "INSERT INTO bots (user_id, slug, name, instructions, tool_names, routine, routine_time, routine_enabled) VALUES (?, 'guest-bot', 'Guest bot', 'x', '[]', 'check', '07:00', 1)",
+      [user.id],
+    );
+    expect((await listRoutineBots()).some((bot) => bot.userId === user.id)).toBe(false);
   });
 
   it("turns a guest into a Google account and keeps its chats", async () => {
-    const { user } = await createGuestUser();
+    const { user, sessionVersion } = await createGuestUser();
     const chat = await runAsUser(user.id, zone, () => createConversation());
     const signedIn = await claimGuestAccount(user.id, profile("new-person"));
     expect(signedIn.user.id).toBe(user.id);
     expect(signedIn.user.guest).toBe(false);
+    expect(await findSession(user.id, sessionVersion)).toBeNull();
+    expect(await findSession(user.id, signedIn.sessionVersion)).not.toBeNull();
     expect((await runAsUser(user.id, zone, () => listConversations())).map((item) => item.id)).toContain(chat.id);
   });
 
