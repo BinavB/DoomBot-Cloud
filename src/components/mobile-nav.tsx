@@ -40,7 +40,7 @@ export function MobileNav({ title, actions, pendingCount, unreadCount, account }
   return (
     <>
       <header className="shrink-0 border-b border-line bg-canvas pt-[env(safe-area-inset-top)] md:hidden">
-        <div className="flex h-14 items-center gap-1 px-2">
+        <div className="relative flex h-14 items-center gap-1 px-2">
           <button
             ref={menuButtonRef}
             type="button"
@@ -53,7 +53,8 @@ export function MobileNav({ title, actions, pendingCount, unreadCount, account }
             <Icon name="menu" size={24} />
             {pendingCount > 0 && <span aria-hidden className="absolute top-2.5 right-2.5 h-2 w-2 rounded-full bg-doom" />}
           </button>
-          <h1 className="min-w-0 flex-1 truncate text-center font-display text-base font-semibold">{title}</h1>
+          <h1 className="pointer-events-none absolute inset-x-28 truncate text-center font-display text-base font-semibold">{title}</h1>
+          <div className="flex-1" />
           {actions}
           <Link href="/alerts" aria-label={unreadCount > 0 ? `Alerts, ${unreadCount} unread` : "Alerts"} className={iconButton}>
             <Icon name="notifications" size={22} />
