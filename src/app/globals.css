@@ -31,6 +31,15 @@
   --font-display: var(--font-sora);
 }
 
+* {
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+}
+
+*:hover {
+  scrollbar-color: #3a4a41 transparent;
+}
+
 html,
 body {
   height: 100%;
