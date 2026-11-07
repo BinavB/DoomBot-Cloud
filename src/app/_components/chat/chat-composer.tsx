@@ -12,8 +12,6 @@ interface ChatComposerProps {
   onDraft: (value: string) => void;
   composerRef: RefObject<HTMLTextAreaElement | null>;
   busy: boolean;
-  think: boolean;
-  onToggleThink: () => void;
   attachments: AttachmentsApi;
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
   onKeyDown: (event: KeyboardEvent<HTMLTextAreaElement>) => void;
@@ -21,7 +19,7 @@ interface ChatComposerProps {
   onTranscript: (text: string) => void;
 }
 
-export function ChatComposer({ draft, onDraft, composerRef, busy, think, onToggleThink, attachments, onSubmit, onKeyDown, onStop, onTranscript }: ChatComposerProps) {
+export function ChatComposer({ draft, onDraft, composerRef, busy, attachments, onSubmit, onKeyDown, onStop, onTranscript }: ChatComposerProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const hasAttachment = attachments.image !== null || attachments.pdf !== null;
 
@@ -66,19 +64,6 @@ export function ChatComposer({ draft, onDraft, composerRef, busy, think, onToggl
           placeholder="Ask DOOMBOT"
           className="max-h-[200px] min-h-[40px] min-w-0 flex-1 resize-none bg-transparent px-2 py-2 text-base leading-relaxed outline-none placeholder:text-muted sm:px-3 md:text-[15px]"
         />
-        {!busy && (
-          <button
-            type="button"
-            onClick={onToggleThink}
-            aria-pressed={think}
-            aria-label={think ? "Think mode on" : "Think mode off"}
-            title={think ? "Think mode: slower, deeper answers" : "Fast mode: quick answers"}
-            className={`flex h-9 shrink-0 items-center gap-1.5 rounded-full px-2 text-sm transition-colors sm:px-3 ${think ? "bg-doom-soft text-doom" : "text-muted hover:bg-raised hover:text-ink"}`}
-          >
-            <Icon name="psychology" size={20} />
-            <span className="hidden sm:inline">{think ? "Think" : "Fast"}</span>
-          </button>
-        )}
         {!busy && (
           <>
             <input

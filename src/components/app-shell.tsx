@@ -6,9 +6,10 @@ interface AppShellProps {
   title: string;
   children: ReactNode;
   bare?: boolean;
+  actions?: ReactNode;
 }
 
-export function AppShell({ title, children, bare = false }: AppShellProps) {
+export function AppShell({ title, children, bare = false, actions }: AppShellProps) {
   if (bare) {
     return <main className="flex min-h-dvh items-center justify-center px-4 py-10">{children}</main>;
   }
@@ -16,8 +17,9 @@ export function AppShell({ title, children, bare = false }: AppShellProps) {
     <div className="fixed inset-0 flex flex-col overflow-hidden md:flex-row">
       <SidebarNav title={title} />
       <div className="flex min-h-0 min-w-0 flex-1 flex-col">
-        <header className="hidden h-14 shrink-0 items-center border-b border-line px-8 md:flex">
+        <header className="hidden h-14 shrink-0 items-center justify-between gap-4 border-b border-line px-8 md:flex">
           <h1 className="font-display text-base font-semibold">{title}</h1>
+          {actions}
         </header>
         <main className="min-h-0 flex-1 overflow-y-auto overscroll-contain">{children}</main>
         <StatusPill floating />

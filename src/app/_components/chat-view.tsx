@@ -7,11 +7,13 @@ import { lastUserBefore, visibleLines, type ChatLine } from "@/app/_components/c
 import { useAttachments } from "@/app/_components/chat/use-attachments";
 import { useChatHistory } from "@/app/_components/chat/use-chat-history";
 import { useChatScroll } from "@/app/_components/chat/use-chat-scroll";
-import { createChat, dismissShareNotice, refreshChats, setChatBusy, setChatError, setMode, stopSharing, useChatState } from "@/components/chat-store";
+import { createChat, dismissShareNotice, refreshChats, setChatBusy, setChatError, stopSharing, useChatState } from "@/components/chat-store";
 import { announceApprovalsChanged } from "@/components/events";
+import { Icon } from "@/components/icon";
 import { announceStatus, startStatus } from "@/components/status-store";
 import { readEvents } from "@/lib/chat-stream";
 import { speak, stopSpeaking } from "@/lib/speech";
+import { ChatHeaderActions } from "@/app/_components/chat/chat-header";
 
 const composerMaxHeight = 200;
 
@@ -249,6 +251,12 @@ export function ChatView() {
 
   return (
     <div className="relative flex h-full min-h-0 min-w-0 flex-1 flex-col">
+      <div className="flex h-11 shrink-0 items-center justify-between gap-2 border-b border-line px-2 md:hidden">
+        <ChatHeaderActions compact />
+        <button type="button" onClick={() => void createChat()} aria-label="New chat" className="flex h-8 w-8 items-center justify-center rounded-lg text-muted hover:bg-raised">
+          <Icon name="edit_square" size={18} />
+        </button>
+      </div>
       <div ref={scrollRef} onScroll={handleScroll} className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
         <ChatMessages
           lines={visible}
@@ -280,8 +288,6 @@ export function ChatView() {
         }}
         composerRef={composerRef}
         busy={busy}
-        think={think}
-        onToggleThink={() => setMode(think ? "fast" : "think")}
         attachments={attachments}
         onSubmit={handleSubmit}
         onKeyDown={handleKeyDown}

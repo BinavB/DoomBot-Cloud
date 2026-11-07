@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { AppShell } from "@/components/app-shell";
 import { ChatView } from "@/app/_components/chat-view";
+import { ChatHeaderActions } from "@/app/_components/chat/chat-header";
 
 export const metadata: Metadata = {
   title: "Chat",
@@ -9,7 +10,7 @@ export const metadata: Metadata = {
 
 export default function ChatPage() {
   return (
-    <AppShell title="Chat">
+    <AppShell title="Chat" actions={<ChatHeaderActions />}>
       <ChatView />
     </AppShell>
   );
