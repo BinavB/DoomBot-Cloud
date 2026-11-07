@@ -251,7 +251,7 @@ export async function createChatCompletion(
   const providers = config.aiProviders.filter((provider) => provider.apiKey);
   if (providers.length === 0) {
     throw new AgentError(
-      "No AI key is set. Add GEMINI_API_KEY or DEEPSEEK_API_KEY to .env.local and restart the server.",
+      "DOOMBOT cannot answer right now. Try again later.",
     );
   }
   if (currentUserIsGuest()) {
@@ -261,7 +261,7 @@ export async function createChatCompletion(
     }
   } else if ((await tokensUsedToday()) >= config.dailyTokenLimit) {
     throw new AgentError(
-      "The daily token limit was reached. Raise DAILY_TOKEN_LIMIT or try again tomorrow.",
+      "You have reached today's limit. Try again tomorrow.",
     );
   }
 

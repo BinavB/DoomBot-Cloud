@@ -6,7 +6,7 @@ import type { ToolSpec } from "@/lib/ai";
 import { fetchWeatherLine } from "@/lib/briefing/weather";
 import { AgentError } from "@/lib/errors";
 import { openGoogleTasks, todaysCalendarEvents, unreadEmails } from "@/lib/google/client";
-import { addTodo, listTodos } from "@/lib/todos";
+import { addTodo, deleteTodo, listTodos, maxTodoTitleLength, updateTodo } from "@/lib/todos";
 import { describeNow } from "@/lib/time";
 
 export type ToolArguments = Record<string, unknown>;
@@ -19,6 +19,14 @@ export interface AgentTool {
   chiefOnly?: boolean;
   summarize: (args: ToolArguments) => string | Promise<string>;
   run: (args: ToolArguments) => Promise<string>;
+}
+
+function readTodoId(args: ToolArguments): number {
+  const id = Number(args.todo_id);
+  if (!Number.isInteger(id)) {
+    throw new AgentError('"todo_id" must be a whole number from list_todos.');
+  }
+  return id;
 }
 
 function readText(args: ToolArguments, key: string, maxLength: number): string {
@@ -87,10 +95,56 @@ const tools: AgentTool[] = [
       required: ["title"],
     },
     requiresApproval: false,
-    summarize: (args) => `Add to-do "${readText(args, "title", 200)}"`,
+    summarize: (args) => `Add to-do "${readText(args, "title", maxTodoTitleLength)}"`,
     run: async (args) => {
-      const todo = await addTodo(readText(args, "title", 200));
+      const todo = await addTodo(readText(args, "title", maxTodoTitleLength));
       return `Added to-do #${todo.id}: ${todo.title}`;
+    },
+  },
+  {
+    name: "update_todo",
+    description: "Rename a to-do item, mark it done or not done, or both. Use the id from list_todos.",
+    parameters: {
+      type: "object",
+      properties: {
+        todo_id: { type: "integer", description: "The to-do id from list_todos." },
+        title: { type: "string", description: "The new wording, up to 200 characters. Leave out to keep it." },
+        done: { type: "boolean", description: "true when the task is finished, false to reopen it. Leave out to keep it." },
+      },
+      required: ["todo_id"],
+    },
+    requiresApproval: false,
+    summarize: (args) => `Update to-do #${String(args.todo_id)}`,
+    run: async (args) => {
+      const id = readTodoId(args);
+      const title = args.title === undefined ? undefined : readText(args, "title", maxTodoTitleLength);
+      const done = typeof args.done === "boolean" ? args.done : undefined;
+      if (title === undefined && done === undefined) {
+        throw new AgentError("Give a new title, a done value, or both.");
+      }
+      const todo = await updateTodo(id, { title, done });
+      if (!todo) {
+        throw new AgentError(`No to-do has the id ${id}. Use list_todos to see the ids.`);
+      }
+      return `To-do #${todo.id} is now "${todo.title}" (${todo.done ? "done" : "open"}).`;
+    },
+  },
+  {
+    name: "delete_todo",
+    description: "Delete a to-do item from the list. Use the id from list_todos.",
+    parameters: {
+      type: "object",
+      properties: { todo_id: { type: "integer", description: "The to-do id from list_todos." } },
+      required: ["todo_id"],
+    },
+    requiresApproval: false,
+    summarize: (args) => `Delete to-do #${String(args.todo_id)}`,
+    run: async (args) => {
+      const id = readTodoId(args);
+      if (!(await deleteTodo(id))) {
+        throw new AgentError(`No to-do has the id ${id}. Use list_todos to see the ids.`);
+      }
+      return `Deleted to-do #${id}.`;
     },
   },
   {

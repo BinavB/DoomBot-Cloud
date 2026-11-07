@@ -38,7 +38,7 @@ export function BriefingView() {
       }
       setBriefing(data.briefing);
     } catch {
-      setError("DOOMBOT could not be reached. Check that the server is running.");
+      setError("DOOMBOT could not be reached. Check your connection and try again.");
     } finally {
       setCreating(false);
     }

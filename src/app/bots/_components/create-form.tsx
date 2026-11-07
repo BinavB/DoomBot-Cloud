@@ -108,7 +108,7 @@ export function CreateForm({
           </label>
         ))}
         <p className="text-xs text-muted">
-          Doombots cannot send, delete or spend. Actions like that always go
+          Doombots cannot send email, change your calendar or spend. Actions like that always go
           through your approvals.
         </p>
       </fieldset>

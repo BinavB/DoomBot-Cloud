@@ -39,7 +39,7 @@ export function DesignForm({ onDesigned, onError }: DesignFormProps) {
       onDesigned(data.bots.map(withIdleActivity));
     } catch {
       onError(
-        "DOOMBOT could not be reached. Check that the server is running.",
+        "DOOMBOT could not be reached. Check your connection and try again.",
       );
     } finally {
       setDesigning(false);

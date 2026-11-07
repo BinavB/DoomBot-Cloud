@@ -1,14 +1,15 @@
 "use client";
 
-import { useEffect, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useState, type FormEvent } from "react";
+import { Icon } from "@/components/icon";
+import { TodoItem } from "./todo-item";
+import { jsonHeaders, type Todo } from "./todo-types";
 
-interface Todo {
-  id: number;
-  title: string;
-  done: boolean;
+const refreshMilliseconds = 15000;
+
+function sortTodos(todos: Todo[]): Todo[] {
+  return [...todos].sort((first, second) => Number(first.done) - Number(second.done) || first.id - second.id);
 }
-
-const jsonHeaders = { "Content-Type": "application/json" };
 
 export function TodoView() {
   const [todos, setTodos] = useState<Todo[]>([]);
@@ -16,7 +17,7 @@ export function TodoView() {
   const [title, setTitle] = useState("");
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
+  const load = useCallback(() => {
     fetch("/api/todos")
       .then((response) => response.json() as Promise<{ todos: Todo[] }>)
       .then((data) => setTodos(data.todos))
@@ -24,47 +25,78 @@ export function TodoView() {
       .finally(() => setLoaded(true));
   }, []);
 
+  useEffect(() => {
+    load();
+    const timer = setInterval(() => {
+      if (!document.hidden) {
+        load();
+      }
+    }, refreshMilliseconds);
+    window.addEventListener("focus", load);
+    return () => {
+      clearInterval(timer);
+      window.removeEventListener("focus", load);
+    };
+  }, [load]);
+
   async function add(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const response = await fetch("/api/todos", {
-      method: "POST",
-      headers: jsonHeaders,
-      body: JSON.stringify({ title }),
-    });
+    const newTitle = title.trim();
+    if (newTitle.length === 0) {
+      return;
+    }
+    setTitle("");
+    const response = await fetch("/api/todos", { method: "POST", headers: jsonHeaders, body: JSON.stringify({ title: newTitle }) });
     const data = (await response.json()) as { todo?: Todo; error?: string };
     if (!response.ok || !data.todo) {
       setError(data.error ?? "The task could not be added.");
+      setTitle((current) => current || newTitle);
       return;
     }
     const todo = data.todo;
-    setTodos((current) => [...current.filter((item) => !item.done), todo, ...current.filter((item) => item.done)]);
-    setTitle("");
+    setTodos((current) => sortTodos([...current, todo]));
     setError(null);
   }
 
-  async function toggle(todo: Todo) {
-    await fetch("/api/todos", {
-      method: "PATCH",
-      headers: jsonHeaders,
-      body: JSON.stringify({ id: todo.id, done: !todo.done }),
-    });
-    setTodos((current) =>
-      current
-        .map((item) => (item.id === todo.id ? { ...item, done: !item.done } : item))
-        .sort((a, b) => Number(a.done) - Number(b.done)),
-    );
+  async function update(todo: Todo, change: Partial<Pick<Todo, "title" | "done">>): Promise<boolean> {
+    const response = await fetch("/api/todos", { method: "PATCH", headers: jsonHeaders, body: JSON.stringify({ id: todo.id, ...change }) });
+    const data = (await response.json()) as { todo?: Todo; error?: string };
+    if (!response.ok || !data.todo) {
+      setError(data.error ?? "The task could not be changed.");
+      load();
+      return false;
+    }
+    const updated = data.todo;
+    setTodos((current) => sortTodos(current.map((item) => (item.id === updated.id ? updated : item))));
+    setError(null);
+    return true;
   }
 
   async function remove(todo: Todo) {
-    await fetch("/api/todos", {
-      method: "DELETE",
-      headers: jsonHeaders,
-      body: JSON.stringify({ id: todo.id }),
-    });
     setTodos((current) => current.filter((item) => item.id !== todo.id));
+    const response = await fetch("/api/todos", { method: "DELETE", headers: jsonHeaders, body: JSON.stringify({ id: todo.id }) });
+    if (!response.ok && response.status !== 404) {
+      setError("The task could not be deleted.");
+      load();
+    }
   }
 
-  const openCount = todos.filter((todo) => !todo.done).length;
+  async function clearDone() {
+    const response = await fetch("/api/todos", { method: "DELETE", headers: jsonHeaders, body: JSON.stringify({ done: true }) });
+    if (!response.ok) {
+      setError("Finished tasks could not be cleared.");
+      return;
+    }
+    setTodos((current) => current.filter((item) => !item.done));
+  }
+
+  const open = todos.filter((todo) => !todo.done);
+  const done = todos.filter((todo) => todo.done);
+  const itemHandlers = {
+    onToggle: (todo: Todo) => void update(todo, { done: !todo.done }),
+    onRename: (todo: Todo, newTitle: string) => update(todo, { title: newTitle }),
+    onDelete: (todo: Todo) => void remove(todo),
+  };
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 px-4 py-8 md:px-6">
@@ -83,9 +115,10 @@ export function TodoView() {
         <button
           type="submit"
           disabled={title.trim().length === 0}
-          className="h-11 shrink-0 whitespace-nowrap rounded-xl bg-doom px-4 text-sm font-semibold text-canvas disabled:opacity-40 sm:px-5"
+          className="flex h-11 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-xl bg-doom px-4 text-sm font-semibold text-canvas disabled:opacity-40 sm:px-5"
         >
-          Add task
+          <Icon name="add" size={18} />
+          Add
         </button>
       </form>
 
@@ -96,39 +129,44 @@ export function TodoView() {
       )}
 
       {loaded && todos.length === 0 && !error && (
-        <p className="text-muted">No tasks yet. Add one above, or ask DOOMBOT in chat to add it for you.</p>
+        <div className="flex flex-col items-center gap-2 rounded-2xl border border-dashed border-line px-6 py-10 text-center">
+          <Icon name="task_alt" size={32} className="text-doom" />
+          <p className="font-medium">Nothing on your list</p>
+          <p className="max-w-sm text-sm text-muted">
+            Add a task above, or ask in chat, like &quot;add renew passport to my list&quot;. Your Doombots can add, change and tick off tasks too.
+          </p>
+        </div>
       )}
 
-      {todos.length > 0 && (
-        <div className="flex flex-col gap-2">
-          <p className="text-sm text-muted">{openCount === 1 ? "1 open task" : `${openCount} open tasks`}</p>
+      {open.length > 0 && (
+        <section className="flex flex-col gap-2">
+          <h2 className="text-sm font-medium text-muted">{open.length === 1 ? "1 open task" : `${open.length} open tasks`}</h2>
           <ul className="divide-y divide-line rounded-2xl border border-line bg-panel">
-            {todos.map((todo) => (
-              <li key={todo.id} className="flex items-center gap-3 px-4 py-3">
-                <input
-                  id={`todo-${todo.id}`}
-                  type="checkbox"
-                  checked={todo.done}
-                  onChange={() => void toggle(todo)}
-                  className="h-4 w-4 accent-[var(--doom)]"
-                />
-                <label
-                  htmlFor={`todo-${todo.id}`}
-                  className={todo.done ? "flex-1 text-muted line-through" : "flex-1"}
-                >
-                  {todo.title}
-                </label>
-                <button
-                  type="button"
-                  onClick={() => void remove(todo)}
-                  className="rounded-md px-2 py-1 text-xs text-muted hover:bg-raised hover:text-ink"
-                >
-                  Delete
-                </button>
-              </li>
+            {open.map((todo) => (
+              <TodoItem key={todo.id} todo={todo} {...itemHandlers} />
             ))}
           </ul>
-        </div>
+        </section>
+      )}
+
+      {done.length > 0 && (
+        <section className="flex flex-col gap-2">
+          <div className="flex items-center justify-between gap-2">
+            <h2 className="text-sm font-medium text-muted">{done.length === 1 ? "1 finished" : `${done.length} finished`}</h2>
+            <button
+              type="button"
+              onClick={() => void clearDone()}
+              className="rounded-lg px-2 py-1 text-sm text-muted hover:bg-raised hover:text-danger"
+            >
+              Clear finished
+            </button>
+          </div>
+          <ul className="divide-y divide-line rounded-2xl border border-line bg-panel/60">
+            {done.map((todo) => (
+              <TodoItem key={todo.id} todo={todo} {...itemHandlers} />
+            ))}
+          </ul>
+        </section>
       )}
     </div>
   );

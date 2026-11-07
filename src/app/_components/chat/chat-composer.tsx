@@ -26,7 +26,7 @@ export function ChatComposer({ draft, onDraft, composerRef, busy, attachments, o
   const hasAttachment = attachments.image !== null || attachments.pdf !== null;
 
   return (
-    <div className="shrink-0 bg-canvas px-3 pt-2 pb-[max(0.75rem,env(safe-area-inset-bottom))] md:border-t md:border-line md:px-6 md:pt-3 md:pb-4">
+    <div className="shrink-0 bg-canvas px-3 pt-2 pb-[max(0.75rem,env(safe-area-inset-bottom))] md:px-6 md:pt-3 md:pb-4">
       <StatusPill />
       {(hasAttachment || attachments.error) && (
         <div className="mx-auto mb-2 flex w-full max-w-3xl items-center gap-3 text-sm">

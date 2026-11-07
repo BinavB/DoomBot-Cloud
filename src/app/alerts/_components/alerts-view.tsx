@@ -14,17 +14,17 @@ interface AlertItem {
   createdAt: string;
 }
 
-type PhoneAlertState = "checking" | "unsupported" | "blocked" | "off" | "on";
+type NotificationState = "checking" | "unsupported" | "blocked" | "off" | "on";
 
 const pollMilliseconds = 10000;
 const jsonHeaders = { "Content-Type": "application/json" };
 
-const phoneAlertMessages: Record<PhoneAlertState, string> = {
-  checking: "Checking phone alerts",
-  unsupported: "This browser cannot send phone alerts.",
+const notificationMessages: Record<NotificationState, string> = {
+  checking: "Checking notifications",
+  unsupported: "This browser cannot show notifications.",
   blocked: "Notifications are blocked. Allow them in this browser's site settings.",
-  off: "Phone alerts are off. Turn them on to get alerts even when this page is closed.",
-  on: "Phone alerts are on.",
+  off: "Notifications are off. Turn them on to get alerts even when this page is closed.",
+  on: "Notifications are on.",
 };
 
 function pushSupported(): boolean {
@@ -46,14 +46,15 @@ function formatTime(sqliteTime: string): string {
 export function AlertsView() {
   const [alerts, setAlerts] = useState<AlertItem[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [phoneAlerts, setPhoneAlerts] = useState<PhoneAlertState>("checking");
+  const [notificationState, setNotificationState] = useState<NotificationState>("checking");
   const [busy, setBusy] = useState(false);
+  const [confirmingClear, setConfirmingClear] = useState(false);
 
   const load = useCallback(() => {
     fetch("/api/notifications")
       .then((response) => response.json() as Promise<{ notifications: AlertItem[] }>)
       .then((data) => setAlerts(data.notifications))
-      .catch(() => setError("Alerts could not load. Check that the server is running."));
+      .catch(() => setError("Alerts could not load. Check your connection and reload."));
   }, []);
 
   useEffect(() => {
@@ -64,20 +65,39 @@ export function AlertsView() {
 
   useEffect(() => {
     let active = true;
-    const check: Promise<PhoneAlertState> = !pushSupported()
+    const check: Promise<NotificationState> = !pushSupported()
       ? Promise.resolve("unsupported")
       : Notification.permission === "denied"
         ? Promise.resolve("blocked")
         : currentSubscription().then((subscription) => (subscription ? "on" : "off"));
     check.then((state) => {
       if (active) {
-        setPhoneAlerts(state);
+        setNotificationState(state);
       }
     });
     return () => {
       active = false;
     };
   }, []);
+
+  async function removeAlert(id: number) {
+    const response = await fetch("/api/notifications", { method: "DELETE", headers: jsonHeaders, body: JSON.stringify({ id }) });
+    if (!response.ok) {
+      setError("The alert could not be deleted.");
+      return;
+    }
+    setAlerts((current) => current.filter((alert) => alert.id !== id));
+  }
+
+  async function clearAll() {
+    setConfirmingClear(false);
+    const response = await fetch("/api/notifications", { method: "DELETE", headers: jsonHeaders, body: JSON.stringify({ all: true }) });
+    if (!response.ok) {
+      setError("Alerts could not be cleared.");
+      return;
+    }
+    setAlerts([]);
+  }
 
   async function readAll() {
     await fetch("/api/notifications", {
@@ -88,13 +108,13 @@ export function AlertsView() {
     load();
   }
 
-  async function turnOnPhoneAlerts() {
+  async function turnOnNotifications() {
     setBusy(true);
     setError(null);
     try {
       const permission = await Notification.requestPermission();
       if (permission !== "granted") {
-        setPhoneAlerts(permission === "denied" ? "blocked" : "off");
+        setNotificationState(permission === "denied" ? "blocked" : "off");
         return;
       }
       const registration = await navigator.serviceWorker.register("/sw.js");
@@ -113,15 +133,15 @@ export function AlertsView() {
       if (!saved.ok) {
         throw new Error("The subscription could not be saved.");
       }
-      setPhoneAlerts("on");
+      setNotificationState("on");
     } catch {
-      setError("Phone alerts could not be turned on. Check that this browser allows notifications.");
+      setError("Notifications could not be turned on. Check that this browser allows them.");
     } finally {
       setBusy(false);
     }
   }
 
-  async function turnOffPhoneAlerts() {
+  async function turnOffNotifications() {
     setBusy(true);
     setError(null);
     try {
@@ -134,22 +154,12 @@ export function AlertsView() {
         });
         await subscription.unsubscribe();
       }
-      setPhoneAlerts("off");
+      setNotificationState("off");
     } catch {
-      setError("Phone alerts could not be turned off.");
+      setError("Notifications could not be turned off.");
     } finally {
       setBusy(false);
     }
-  }
-
-  async function sendTestAlert() {
-    setError(null);
-    const response = await fetch("/api/push/test", { method: "POST" });
-    if (!response.ok) {
-      setError("The test alert could not be sent.");
-      return;
-    }
-    load();
   }
 
   const unread = alerts.filter((alert) => !alert.read).length;
@@ -157,32 +167,25 @@ export function AlertsView() {
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-5 px-4 py-8 md:px-8">
       <section className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-line bg-panel p-5">
-        <p className="max-w-md text-sm text-muted">{phoneAlertMessages[phoneAlerts]}</p>
+        <p className="max-w-md text-sm text-muted">{notificationMessages[notificationState]}</p>
         <div className="flex flex-wrap gap-2">
-          {phoneAlerts === "off" && (
+          {notificationState === "off" && (
             <button
               type="button"
               disabled={busy}
-              onClick={() => void turnOnPhoneAlerts()}
+              onClick={() => void turnOnNotifications()}
               className="flex h-10 items-center gap-2 rounded-xl bg-doom px-4 text-sm font-semibold text-canvas disabled:opacity-40"
             >
               <Icon name="notifications_active" size={18} />
-              Turn on phone alerts
+              Turn on notifications
             </button>
           )}
-          {phoneAlerts === "on" && (
+          {notificationState === "on" && (
             <>
               <button
                 type="button"
-                onClick={() => void sendTestAlert()}
-                className="h-10 rounded-xl border border-line px-4 text-sm font-medium hover:bg-raised"
-              >
-                Send test alert
-              </button>
-              <button
-                type="button"
                 disabled={busy}
-                onClick={() => void turnOffPhoneAlerts()}
+                onClick={() => void turnOffNotifications()}
                 className="h-10 rounded-xl px-4 text-sm text-muted hover:bg-raised hover:text-danger disabled:opacity-40"
               >
                 Turn off
@@ -194,15 +197,45 @@ export function AlertsView() {
 
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-muted">{unread === 0 ? "You have read everything." : `${unread} unread`}</p>
-        {unread > 0 && (
-          <button
-            type="button"
-            onClick={() => void readAll()}
-            className="h-10 rounded-xl border border-line px-4 text-sm font-medium hover:bg-raised"
-          >
-            Mark all read
-          </button>
-        )}
+        <div className="flex flex-wrap items-center gap-2">
+          {unread > 0 && (
+            <button
+              type="button"
+              onClick={() => void readAll()}
+              className="h-10 rounded-xl border border-line px-4 text-sm font-medium hover:bg-raised"
+            >
+              Mark all read
+            </button>
+          )}
+          {alerts.length > 0 &&
+            (confirmingClear ? (
+              <span className="flex items-center gap-2 text-sm">
+                Delete all alerts?
+                <button
+                  type="button"
+                  onClick={() => void clearAll()}
+                  className="h-10 rounded-xl bg-danger px-4 text-sm font-semibold text-canvas"
+                >
+                  Delete all
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setConfirmingClear(false)}
+                  className="h-10 rounded-xl px-3 text-sm text-muted hover:bg-raised hover:text-ink"
+                >
+                  Cancel
+                </button>
+              </span>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setConfirmingClear(true)}
+                className="h-10 rounded-xl px-4 text-sm text-muted hover:bg-raised hover:text-danger"
+              >
+                Clear all
+              </button>
+            ))}
+        </div>
       </div>
 
       {error && (
@@ -224,12 +257,20 @@ export function AlertsView() {
                 alert.urgent ? "border-danger/50" : "border-line"
               }`}
             >
-              <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted">
+              <div className="flex items-center justify-between gap-2 text-xs text-muted">
                 <span className="flex items-center gap-2">
                   {!alert.read && <span aria-label="Unread" className="h-2 w-2 rounded-full bg-doom" />}
                   {alert.urgent && <span className="font-semibold text-danger">Urgent</span>}
+                  <span>{formatTime(alert.createdAt)}</span>
                 </span>
-                <span>{formatTime(alert.createdAt)}</span>
+                <button
+                  type="button"
+                  onClick={() => void removeAlert(alert.id)}
+                  aria-label={`Delete alert: ${alert.title}`}
+                  className="-my-1 -mr-2 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-muted hover:bg-raised hover:text-ink"
+                >
+                  <Icon name="close" size={18} />
+                </button>
               </div>
               <p className="font-medium">{alert.title}</p>
               {alert.body && <Markdown text={alert.body} />}

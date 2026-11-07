@@ -21,7 +21,6 @@ import {
 import { normalizeBotInput, normalizeBotInstructions, normalizeBotName, normalizeRoutine } from "@/lib/bots/validate";
 import { AgentError } from "@/lib/errors";
 import { listNotifications } from "@/lib/notifications";
-import { deleteTodo, listTodos, setTodoDone } from "@/lib/todos";
 
 const maxInstructionLength = 2000;
 const resultPreviewLength = 240;
@@ -386,52 +385,6 @@ export function createChiefTools(allowedBotTools: () => Set<string>): AgentTool[
         return alerts
           .map((alert) => `${alert.read ? "" : "[unread] "}${alert.urgent ? "[urgent] " : ""}${alert.title}: ${clip(alert.body.replace(/\s+/g, " "), resultPreviewLength)}`)
           .join("\n");
-      },
-    },
-    {
-      name: "set_todo_done",
-      description: "Mark a to-do item as done or not done.",
-      parameters: {
-        type: "object",
-        properties: {
-          todo_id: { type: "integer", description: "The to-do id from list_todos." },
-          done: { type: "boolean" },
-        },
-        required: ["todo_id", "done"],
-      },
-      requiresApproval: false,
-      chiefOnly: true,
-      summarize: (args) => `Mark to-do #${String(args.todo_id)} ${args.done === true ? "done" : "not done"}`,
-      run: async (args) => {
-        const id = readId(args, "todo_id");
-        if (!(await listTodos()).some((todo) => todo.id === id)) {
-          throw new AgentError(`No to-do has the id ${id}.`);
-        }
-        await setTodoDone(id, args.done === true);
-        return `To-do #${id} is now ${args.done === true ? "done" : "not done"}.`;
-      },
-    },
-    {
-      name: "delete_todo",
-      description: "Delete a to-do item. This always waits for the user's approval.",
-      parameters: {
-        type: "object",
-        properties: { todo_id: { type: "integer", description: "The to-do id from list_todos." } },
-        required: ["todo_id"],
-      },
-      requiresApproval: true,
-      chiefOnly: true,
-      summarize: async (args) => {
-        const todo = (await listTodos()).find((item) => item.id === Number(args.todo_id));
-        return todo ? `Delete to-do "${todo.title}"` : `Delete to-do #${String(args.todo_id)}`;
-      },
-      run: async (args) => {
-        const id = readId(args, "todo_id");
-        if (!(await listTodos()).some((todo) => todo.id === id)) {
-          throw new AgentError(`No to-do has the id ${id}.`);
-        }
-        await deleteTodo(id);
-        return `Deleted to-do #${id}.`;
       },
     },
   ];

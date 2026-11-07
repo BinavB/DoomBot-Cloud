@@ -76,6 +76,18 @@ export async function unreadCount(): Promise<number> {
   return row?.count ?? 0;
 }
 
+export async function deleteNotification(id: number): Promise<boolean> {
+  const row = await queryRow<{ id: number }>("DELETE FROM notifications WHERE id = ? AND user_id = ? RETURNING id", [
+    id,
+    currentUserId(),
+  ]);
+  return row !== undefined;
+}
+
+export async function clearNotifications(): Promise<void> {
+  await runStatement("DELETE FROM notifications WHERE user_id = ?", [currentUserId()]);
+}
+
 export async function markAllRead(): Promise<void> {
   await runStatement("UPDATE notifications SET read = 1 WHERE user_id = ? AND read = 0", [currentUserId()]);
 }

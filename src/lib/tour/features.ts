@@ -30,7 +30,7 @@ export const features: Record<FeatureId, Feature> = {
       "A Doombot is a helper with one job, like watching your email or tracking your tasks.",
       "Describe what you need and DOOMBOT designs them for you, or build one yourself.",
       "Each Doombot keeps its own private memory.",
-      "Doombots never send, delete or spend anything without your approval.",
+      "Doombots never send email, change your calendar or spend anything without your approval.",
     ],
   },
   routines: {

@@ -139,7 +139,7 @@ export function ChatView() {
         status.done("Stopped");
       } else {
         status.fail("Couldn't get a reply. Try again");
-        setChatError(caught instanceof Error ? caught.message : "DOOMBOT could not be reached. Check that the server is running.");
+        setChatError(caught instanceof Error ? caught.message : "DOOMBOT could not be reached. Check your connection and try again.");
       }
     } finally {
       history.update(chatId, (current) => current.filter((line) => !(line.id === replyId && line.content.length === 0)));

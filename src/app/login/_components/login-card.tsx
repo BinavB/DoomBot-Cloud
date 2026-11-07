@@ -14,7 +14,7 @@ function readError(): string | null {
 }
 
 const errorMessages: Record<string, string> = {
-  setup: "Sign-in is not set up on this server yet. The Google keys are missing.",
+  setup: "Sign-in is not available right now. Try again later.",
   denied: "Google sign-in was cancelled. Try again when you are ready.",
   expired: "The sign-in took too long or was interrupted. Try again.",
   failed: "Google could not confirm your account. Try again, or use another account.",

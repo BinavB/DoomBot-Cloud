@@ -36,7 +36,7 @@ export function useBotsData(onError: (message: string) => void) {
       })
       .catch(() =>
         onError(
-          "Doombots could not load. Check that the server is running, then reload.",
+          "Doombots could not load. Check your connection, then reload.",
         ),
       );
   }, [onError]);

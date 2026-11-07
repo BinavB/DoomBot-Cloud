@@ -66,7 +66,7 @@ export function RoutineForm({
     onChange(data.bot);
     onNotice(
       data.bot.routine
-        ? `Routine saved. It runs ${describeSchedule(data.bot.routine)} while DOOMBOT is running.`
+        ? `Routine saved. It runs ${describeSchedule(data.bot.routine)}.`
         : "Routine saved.",
     );
   }

@@ -9,7 +9,7 @@ export const suggestions = [
   "Brief me on today",
   "What's on my calendar today?",
   "Summarize my unread email",
-  "What's the weather in Dubai?",
+  "What's the weather today?",
 ];
 
 export function visibleLines(lines: ChatLine[], sending: boolean): ChatLine[] {

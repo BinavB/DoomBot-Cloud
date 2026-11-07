@@ -1,5 +1,5 @@
 import { currentUserId } from "@/lib/auth/context";
-import { queryRow, queryRows, runStatement } from "@/lib/database";
+import { queryRow, queryRows } from "@/lib/database";
 
 export interface Todo {
   id: number;
@@ -32,10 +32,28 @@ export async function addTodo(title: string): Promise<Todo> {
   return toTodo(row as TodoRow);
 }
 
-export async function setTodoDone(id: number, done: boolean): Promise<void> {
-  await runStatement("UPDATE todos SET done = ? WHERE id = ? AND user_id = ?", [done ? 1 : 0, id, currentUserId()]);
+export const maxTodoTitleLength = 200;
+
+export interface TodoChange {
+  title?: string;
+  done?: boolean;
 }
 
-export async function deleteTodo(id: number): Promise<void> {
-  await runStatement("DELETE FROM todos WHERE id = ? AND user_id = ?", [id, currentUserId()]);
+export async function updateTodo(id: number, change: TodoChange): Promise<Todo | null> {
+  const row = await queryRow<TodoRow>(
+    `UPDATE todos SET title = COALESCE(?, title), done = COALESCE(?, done)
+     WHERE id = ? AND user_id = ? RETURNING id, title, done`,
+    [change.title ?? null, change.done === undefined ? null : change.done ? 1 : 0, id, currentUserId()],
+  );
+  return row ? toTodo(row) : null;
+}
+
+export async function deleteTodo(id: number): Promise<boolean> {
+  const row = await queryRow<{ id: number }>("DELETE FROM todos WHERE id = ? AND user_id = ? RETURNING id", [id, currentUserId()]);
+  return row !== undefined;
+}
+
+export async function clearDoneTodos(): Promise<number> {
+  const rows = await queryRows<{ id: number }>("DELETE FROM todos WHERE user_id = ? AND done = 1 RETURNING id", [currentUserId()]);
+  return rows.length;
 }
