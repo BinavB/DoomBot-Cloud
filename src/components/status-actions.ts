@@ -15,6 +15,7 @@ function messages(working: string, done: string, failVerb: string): ActionMessag
 }
 
 const rules: ActionRule[] = [
+  { method: "POST", pattern: /^\/api\/feedback$/, messages: messages("Saving feedback", "Thanks for the feedback", "save feedback") },
   { method: "POST", pattern: /^\/api\/chat\/rewind$/, messages: messages("Preparing to resend", "Ready to resend", "resend") },
   { method: "POST", pattern: /^\/api\/conversations$/, messages: messages("Starting a new chat", "New chat ready", "start a new chat") },
   { method: "PATCH", pattern: /^\/api\/conversations\/[^/]+$/, messages: messages("Renaming chat", "Chat renamed", "rename the chat") },

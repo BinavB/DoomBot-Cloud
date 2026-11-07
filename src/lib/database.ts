@@ -158,6 +158,14 @@ const schema = `
     UNIQUE (user_id, conversation_id)
   );
 
+  CREATE TABLE IF NOT EXISTS message_feedback (
+    user_id INTEGER NOT NULL,
+    message_id INTEGER NOT NULL,
+    rating INTEGER NOT NULL,
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    PRIMARY KEY (user_id, message_id)
+  );
+
   CREATE TABLE IF NOT EXISTS rate_limits (
     user_id INTEGER NOT NULL,
     window_start INTEGER NOT NULL,

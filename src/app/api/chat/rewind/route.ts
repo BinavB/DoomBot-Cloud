@@ -18,6 +18,10 @@ export const POST = withUser(async (request: Request) => {
   if (!(await ownsConversation(body.conversationId))) {
     return NextResponse.json({ error: "That chat does not exist." }, { status: 404 });
   }
+  await runStatement(
+    "DELETE FROM message_feedback WHERE user_id = ? AND message_id IN (SELECT id FROM messages WHERE user_id = ? AND conversation_id = ? AND id >= ?)",
+    [currentUserId(), currentUserId(), body.conversationId, body.messageId],
+  );
   await runStatement("DELETE FROM messages WHERE user_id = ? AND conversation_id = ? AND id >= ?", [
     currentUserId(),
     body.conversationId,

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { withinBudget } from "@/lib/agent/run";
 
-const line = (id: number, size: number) => ({ id, role: "user" as const, content: "x".repeat(size) });
+const line = (id: number, size: number) => ({ id, role: "user" as const, content: "x".repeat(size), rating: 0 });
 
 describe("history budget", () => {
   it("keeps the newest messages that fit", () => {

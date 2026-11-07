@@ -22,6 +22,7 @@ export interface StoredMessage {
   id: number;
   role: "user" | "assistant";
   content: string;
+  rating: number;
 }
 
 export interface AgentReply {
@@ -66,7 +67,9 @@ export function withinBudget(messages: StoredMessage[], budget: number = history
 
 export async function loadMessages(conversationId: string, limit: number): Promise<StoredMessage[]> {
   const rows = await queryRows<StoredMessage>(
-    "SELECT id, role, content FROM messages WHERE user_id = ? AND conversation_id = ? ORDER BY id DESC LIMIT ?",
+    `SELECT m.id AS id, m.role AS role, m.content AS content, COALESCE(f.rating, 0) AS rating
+     FROM messages m LEFT JOIN message_feedback f ON f.message_id = m.id AND f.user_id = m.user_id
+     WHERE m.user_id = ? AND m.conversation_id = ? ORDER BY m.id DESC LIMIT ?`,
     [currentUserId(), conversationId, limit],
   );
   return [...rows].reverse();

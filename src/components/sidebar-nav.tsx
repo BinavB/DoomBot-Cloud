@@ -23,10 +23,6 @@ export function SidebarNav({ title }: { title: string }) {
         <div className="min-h-0 flex-1 overflow-y-auto">
           <NavList pendingCount={navData.pendingCount} unreadCount={navData.unreadCount} />
         </div>
-        <div className="flex gap-3 px-1 text-xs text-muted">
-          <Link href="/privacy" className="hover:text-ink">Privacy</Link>
-          <Link href="/terms" className="hover:text-ink">Terms</Link>
-        </div>
         <UserMenu account={navData.account} />
       </nav>
       <MobileNav title={title} {...navData} />

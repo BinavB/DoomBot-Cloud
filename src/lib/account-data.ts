@@ -21,6 +21,7 @@ const userTables = [
   "user_timezones",
   "notes",
   "rate_limits",
+  "message_feedback",
 ];
 
 const credentialTables = ["google_tokens", "rate_limits"];

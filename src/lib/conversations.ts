@@ -74,6 +74,10 @@ export async function renameConversation(id: string, title: string): Promise<voi
 export async function deleteConversation(id: string): Promise<void> {
   const userId = currentUserId();
   await runStatement("DELETE FROM shared_chats WHERE user_id = ? AND conversation_id = ?", [userId, id]);
+  await runStatement(
+    "DELETE FROM message_feedback WHERE user_id = ? AND message_id IN (SELECT id FROM messages WHERE user_id = ? AND conversation_id = ?)",
+    [userId, userId, id],
+  );
   await runStatement("DELETE FROM messages WHERE user_id = ? AND conversation_id = ?", [userId, id]);
   await runStatement("DELETE FROM conversations WHERE user_id = ? AND id = ?", [userId, id]);
 }

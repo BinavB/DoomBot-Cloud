@@ -12,20 +12,15 @@ import { Icon } from "@/components/icon";
 import { Markdown } from "@/components/markdown";
 import { StatusPill } from "@/components/status-pill";
 import { announceStatus, startStatus } from "@/components/status-store";
+import { attachmentHelp, classifyAttachment } from "@/lib/attachments";
+import { readEvents } from "@/lib/chat-stream";
 import type { Conversation } from "@/lib/conversations";
 
 interface ChatLine {
   id: number;
   role: "user" | "assistant";
   content: string;
-}
-
-interface StreamEvent {
-  type: "token" | "done" | "error";
-  text?: string;
-  reply?: string;
-  approvalsCreated?: number[];
-  error?: string;
+  rating?: number;
 }
 
 const suggestions = [
@@ -37,30 +32,6 @@ const suggestions = [
 
 const nearBottomPixels = 96;
 const composerMaxHeight = 200;
-
-async function readEvents(response: Response, onEvent: (event: StreamEvent) => void): Promise<void> {
-  const reader = response.body?.getReader();
-  if (!reader) {
-    throw new Error("No response");
-  }
-  const decoder = new TextDecoder();
-  let buffer = "";
-  for (;;) {
-    const { done, value } = await reader.read();
-    if (done) {
-      return;
-    }
-    buffer += decoder.decode(value, { stream: true });
-    const blocks = buffer.split("\n\n");
-    buffer = blocks.pop() ?? "";
-    for (const block of blocks) {
-      const line = block.split("\n").find((item) => item.startsWith("data: "));
-      if (line) {
-        onEvent(JSON.parse(line.slice(6)) as StreamEvent);
-      }
-    }
-  }
-}
 
 export function ChatView() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -335,12 +306,12 @@ export function ChatView() {
     if (!file) {
       return;
     }
-    const isPdf = file.type === "application/pdf";
-    const isImage = ["image/png", "image/jpeg", "image/webp"].includes(file.type);
-    if ((!isPdf && !isImage) || file.size > (isPdf ? 4 : 2.5) * 1024 * 1024) {
-      setImageError("Attach a PNG, JPEG or WebP image up to 2.5 MB, or a PDF up to 4 MB.");
+    const kind = classifyAttachment(file.type, file.size);
+    if (!kind) {
+      setImageError(attachmentHelp);
       return;
     }
+    const isPdf = kind === "pdf";
     const reader = new FileReader();
     reader.onload = () => {
       const result = typeof reader.result === "string" ? reader.result : null;
@@ -469,6 +440,18 @@ export function ChatView() {
     if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing && !touchKeyboard) {
       event.preventDefault();
       void send(draft);
+    }
+  }
+
+  async function rate(line: ChatLine, rating: number) {
+    const next = line.rating === rating ? 0 : rating;
+    const response = await fetch("/api/feedback", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ messageId: line.id, rating: next }),
+    });
+    if (response.ok) {
+      setLines((current) => current.map((item) => (item.id === line.id ? { ...item, rating: next } : item)));
     }
   }
 
@@ -610,6 +593,28 @@ export function ChatView() {
                         >
                           {copiedId === line.id ? "Copied" : "Copy"}
                         </button>
+                        {line.id > 0 && (
+                          <>
+                            <button
+                              type="button"
+                              onClick={() => void rate(line, 1)}
+                              aria-label="Good reply"
+                              aria-pressed={line.rating === 1}
+                              className={`flex h-7 w-7 items-center justify-center rounded-md opacity-100 transition-opacity hover:bg-raised md:opacity-0 md:group-hover:opacity-100 md:focus-visible:opacity-100 ${line.rating === 1 ? "text-doom md:opacity-100" : "text-muted hover:text-ink"}`}
+                            >
+                              <Icon name="thumb_up" size={16} />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => void rate(line, -1)}
+                              aria-label="Bad reply"
+                              aria-pressed={line.rating === -1}
+                              className={`flex h-7 w-7 items-center justify-center rounded-md opacity-100 transition-opacity hover:bg-raised md:opacity-0 md:group-hover:opacity-100 md:focus-visible:opacity-100 ${line.rating === -1 ? "text-danger md:opacity-100" : "text-muted hover:text-ink"}`}
+                            >
+                              <Icon name="thumb_down" size={16} />
+                            </button>
+                          </>
+                        )}
                         {line.id > 0 && (
                           <button
                             type="button"

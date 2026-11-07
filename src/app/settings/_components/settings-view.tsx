@@ -174,7 +174,7 @@ export function SettingsView() {
         </ul>
       </section>
 
-      <section className="flex flex-col gap-3 rounded-2xl border border-danger/40 bg-panel p-5">
+      <section id="delete-data" className="flex scroll-mt-4 flex-col gap-3 rounded-2xl border border-danger/40 bg-panel p-5">
         <h2 className="font-display text-lg font-semibold">Delete my data</h2>
         <p className="text-sm text-muted">
           This permanently erases your chats, Doombots, memories, notes, to-dos, alerts and settings, and signs you out. It cannot be undone.
