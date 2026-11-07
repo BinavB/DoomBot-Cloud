@@ -3,10 +3,10 @@ import { listNotifications, markAllRead, unreadCount } from "@/lib/notifications
 import { withUser } from "@/lib/auth/route";
 
 export const GET = withUser(async () => {
-  const notifications = await listNotifications();
+  const [notifications, unread] = await Promise.all([listNotifications(), unreadCount()]);
   return NextResponse.json({
     notifications,
-    unread: await unreadCount(),
+    unread,
     latest: notifications.find((notification) => !notification.read) ?? null,
   });
 });

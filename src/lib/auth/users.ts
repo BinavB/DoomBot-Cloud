@@ -42,9 +42,29 @@ export async function revokeSessions(userId: number): Promise<void> {
   await runStatement("UPDATE users SET session_version = session_version + 1 WHERE id = ?", [userId]);
 }
 
-export async function findSessionUser(userId: number, version: number): Promise<User | null> {
-  const row = await queryRow<User>("SELECT id FROM users WHERE id = ? AND session_version = ?", [userId, version]);
-  return row ? findUser(userId) : null;
+export interface Session {
+  user: User;
+  timeZone: string;
+}
+
+export async function findSession(userId: number, version: number): Promise<Session | null> {
+  const row = await queryRow<User & { time_zone: string | null; stale: number }>(
+    `SELECT u.id AS id, u.email AS email, u.name AS name, u.picture AS picture, t.time_zone AS time_zone,
+            (u.last_seen_at < datetime('now', ?)) AS stale
+     FROM users u LEFT JOIN user_timezones t ON t.user_id = u.id
+     WHERE u.id = ? AND u.session_version = ?`,
+    [`-${seenRefreshMinutes} minutes`, userId, version],
+  );
+  if (!row) {
+    return null;
+  }
+  if (row.stale === 1) {
+    runStatement("UPDATE users SET last_seen_at = datetime('now') WHERE id = ?", [userId]).catch(() => undefined);
+  }
+  return {
+    user: { id: row.id, email: row.email, name: row.name, picture: row.picture },
+    timeZone: row.time_zone ?? config.timezone,
+  };
 }
 
 export async function findUser(userId: number): Promise<User | null> {

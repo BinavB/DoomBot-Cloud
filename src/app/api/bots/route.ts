@@ -1,14 +1,13 @@
 import { NextResponse } from "next/server";
 import { botAllowedToolInfos } from "@/lib/agent/tools";
-import { createBot, getBotActivity, listBots } from "@/lib/bots/store";
+import { createBot, getAllBotActivity, listBots } from "@/lib/bots/store";
 import { normalizeBotInput } from "@/lib/bots/validate";
 import { withUser } from "@/lib/auth/route";
 
 export const GET = withUser(async () => {
-  const bots = await Promise.all(
-    (await listBots()).map(async (bot) => ({ ...bot, activity: await getBotActivity(bot.id) })),
-  );
-  return NextResponse.json({ bots });
+  const [bots, activity] = await Promise.all([listBots(), getAllBotActivity()]);
+  const idle = { running: 0, total: 0, failed: 0, lastStatus: null, lastAt: null };
+  return NextResponse.json({ bots: bots.map((bot) => ({ ...bot, activity: activity.get(bot.id) ?? idle })) });
 });
 
 export const POST = withUser(async (request: Request) => {

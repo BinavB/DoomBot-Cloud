@@ -22,12 +22,18 @@ function toConversation(row: ConversationRow): Conversation {
   return { id: row.id, title: row.title, updatedAt: row.updated_at };
 }
 
+const adoptedUsers = new Set<number>();
+
 async function adoptLegacyConversation(userId: number): Promise<void> {
+  if (adoptedUsers.has(userId)) {
+    return;
+  }
   await runStatement(
     `INSERT OR IGNORE INTO conversations (user_id, id, title)
      SELECT ?, ?, 'Earlier chat' WHERE EXISTS (SELECT 1 FROM messages WHERE user_id = ? AND conversation_id = ?)`,
     [userId, legacyConversationId, userId, legacyConversationId],
   );
+  adoptedUsers.add(userId);
 }
 
 export async function listConversations(): Promise<Conversation[]> {

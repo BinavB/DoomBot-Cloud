@@ -11,7 +11,7 @@ import { DoomMark } from "@/components/doom-mark";
 import { Icon } from "@/components/icon";
 import { Markdown } from "@/components/markdown";
 import { StatusPill } from "@/components/status-pill";
-import { announceStatus } from "@/components/status-store";
+import { announceStatus, startStatus } from "@/components/status-store";
 import type { Conversation } from "@/lib/conversations";
 
 interface ChatLine {
@@ -37,19 +37,6 @@ const suggestions = [
 
 const nearBottomPixels = 96;
 const composerMaxHeight = 200;
-
-function TypingDots() {
-  return (
-    <div className="flex items-center gap-3" role="status" aria-label="DOOMBOT is replying">
-      <DoomMark size={28} />
-      <div className="flex gap-1.5 rounded-full bg-raised px-3.5 py-3">
-        <span className="typing-dot h-2 w-2 rounded-full bg-muted" />
-        <span className="typing-dot h-2 w-2 rounded-full bg-muted" />
-        <span className="typing-dot h-2 w-2 rounded-full bg-muted" />
-      </div>
-    </div>
-  );
-}
 
 async function readEvents(response: Response, onEvent: (event: StreamEvent) => void): Promise<void> {
   const reader = response.body?.getReader();
@@ -405,6 +392,7 @@ export function ChatView() {
     const controller = new AbortController();
     abortRef.current = controller;
     let finalReply: string | null = null;
+    const status = startStatus("DOOMBOT is replying");
 
     try {
       const response = await fetch("/api/chat", {
@@ -438,8 +426,12 @@ export function ChatView() {
           }
         } else if (event.type === "error") {
           setError(event.error ?? "DOOMBOT could not answer.");
+          status.fail("Couldn't get a reply. Try again");
         }
       });
+      if (finalReply !== null) {
+        status.done("Reply ready");
+      }
       if (finalReply !== null) {
         const reply = finalReply;
         setLines((current) => current.map((line) => (line.id === replyId ? { ...line, content: reply } : line)));
@@ -447,7 +439,9 @@ export function ChatView() {
     } catch (caught) {
       if (controller.signal.aborted) {
         setError(null);
+        status.done("Stopped");
       } else {
+        status.fail("Couldn't get a reply. Try again");
         setError(caught instanceof Error ? caught.message : "DOOMBOT could not be reached. Check that the server is running.");
       }
     } finally {
@@ -547,7 +541,7 @@ export function ChatView() {
               </div>
             )}
 
-            {lines.map((line, index) =>
+            {lines.filter((line) => line.role === "user" || line.content.length > 0 || !sending).map((line, index) =>
               line.role === "user" ? (
                 <div key={line.id} className="group flex flex-col items-end gap-1">
                   {editingId === line.id ? (
@@ -631,8 +625,6 @@ export function ChatView() {
                 </div>
               ),
             )}
-
-            {sending && lines[lines.length - 1]?.content === "" && <TypingDots />}
 
             {shareNotice && (
               <div role="status" className="flex flex-col gap-2 rounded-xl border border-doom/50 px-4 py-3 text-sm">

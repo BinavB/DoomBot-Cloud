@@ -14,15 +14,15 @@ import {
   saveTimeZone,
 } from "@/lib/settings";
 
-export const GET = withUser(async () =>
-  NextResponse.json({
-    customInstructions: await getCustomInstructions(),
-    timeZone: await getTimeZone(),
-    homeCity: (await getHomeLocation())?.city ?? "",
-    memories: await listUserMemories(),
-    maxInstructionsLength,
-  }),
-);
+export const GET = withUser(async () => {
+  const [customInstructions, timeZone, home, memories] = await Promise.all([
+    getCustomInstructions(),
+    getTimeZone(),
+    getHomeLocation(),
+    listUserMemories(),
+  ]);
+  return NextResponse.json({ customInstructions, timeZone, homeCity: home?.city ?? "", memories, maxInstructionsLength });
+});
 
 export const PUT = withUser(async (request: Request) => {
   const body = await readBody<{ customInstructions?: unknown; timeZone?: unknown; homeCity?: unknown }>(request);

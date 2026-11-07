@@ -14,41 +14,56 @@ export interface NavData {
   account: Account | null;
 }
 
-const unreadPollMilliseconds = 15000;
+const unreadPollMilliseconds = 30000;
+const freshMilliseconds = 20000;
+
+let cache: NavData = { pendingCount: 0, unreadCount: 0, account: null };
+let loadedAt = 0;
 
 export function useNavData(): NavData {
-  const [pendingCount, setPendingCount] = useState(0);
-  const [unreadCount, setUnreadCount] = useState(0);
-  const [account, setAccount] = useState<Account | null>(null);
+  const [data, setData] = useState<NavData>(cache);
+
+  const update = useCallback((change: Partial<NavData>) => {
+    cache = { ...cache, ...change };
+    setData(cache);
+  }, []);
 
   const loadPending = useCallback(() => {
     fetch("/api/approvals")
       .then((response) => response.json() as Promise<{ approvals: unknown[] }>)
-      .then((data) => setPendingCount(data.approvals.length))
-      .catch(() => setPendingCount(0));
-  }, []);
+      .then((result) => update({ pendingCount: result.approvals.length }))
+      .catch(() => undefined);
+  }, [update]);
 
   const loadUnread = useCallback(() => {
+    if (document.hidden) {
+      return;
+    }
     fetch("/api/notifications")
       .then((response) => response.json() as Promise<{ unread: number }>)
-      .then((data) => setUnreadCount(data.unread))
-      .catch(() => setUnreadCount(0));
-  }, []);
+      .then((result) => update({ unreadCount: result.unread }))
+      .catch(() => undefined);
+  }, [update]);
 
   useEffect(() => {
-    fetch("/api/auth/me")
-      .then((response) => response.json() as Promise<{ user: Account | null }>)
-      .then((data) => setAccount(data.user))
-      .catch(() => setAccount(null));
-    loadPending();
-    loadUnread();
+    if (Date.now() - loadedAt > freshMilliseconds) {
+      loadedAt = Date.now();
+      if (!cache.account) {
+        fetch("/api/auth/me")
+          .then((response) => response.json() as Promise<{ user: Account | null }>)
+          .then((result) => update({ account: result.user }))
+          .catch(() => undefined);
+      }
+      loadPending();
+      loadUnread();
+    }
     const timer = setInterval(loadUnread, unreadPollMilliseconds);
     window.addEventListener(approvalsChangedEvent, loadPending);
     return () => {
       clearInterval(timer);
       window.removeEventListener(approvalsChangedEvent, loadPending);
     };
-  }, [loadPending, loadUnread]);
+  }, [loadPending, loadUnread, update]);
 
-  return { pendingCount, unreadCount, account };
+  return data;
 }

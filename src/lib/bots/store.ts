@@ -148,14 +148,20 @@ function toTask(row: TaskRow): BotTask {
   };
 }
 
+const seededUsers = new Set<number>();
+
 async function seedBuiltInBots(): Promise<void> {
   const userId = currentUserId();
+  if (seededUsers.has(userId)) {
+    return;
+  }
   for (const bot of builtInBots) {
     await runStatement(
       "INSERT OR IGNORE INTO bots (user_id, slug, name, instructions, tool_names, built_in) VALUES (?, ?, ?, ?, ?, 1)",
       [userId, bot.slug, bot.name, bot.instructions, JSON.stringify(bot.toolNames)],
     );
   }
+  seededUsers.add(userId);
 }
 
 export async function listBots(): Promise<Bot[]> {
@@ -334,6 +340,31 @@ export async function getBotActivity(botId: number): Promise<BotActivity> {
     lastStatus: last?.status ?? null,
     lastAt: counts.last_at,
   };
+}
+
+export async function getAllBotActivity(): Promise<Map<number, BotActivity>> {
+  const userId = currentUserId();
+  const rows = await queryRows<{
+    bot_id: number;
+    total: number;
+    running: number;
+    failed: number;
+    last_at: string | null;
+    last_status: string | null;
+  }>(
+    `SELECT bot_id, COUNT(*) AS total, COALESCE(SUM(status = 'running'), 0) AS running,
+            COALESCE(SUM(status = 'failed'), 0) AS failed, MAX(COALESCE(finished_at, created_at)) AS last_at,
+            (SELECT status FROM bot_tasks latest WHERE latest.bot_id = bot_tasks.bot_id AND latest.user_id = ?
+             ORDER BY latest.id DESC LIMIT 1) AS last_status
+     FROM bot_tasks WHERE user_id = ? GROUP BY bot_id`,
+    [userId, userId],
+  );
+  return new Map(
+    rows.map((row) => [
+      row.bot_id,
+      { running: row.running, total: row.total, failed: row.failed, lastStatus: row.last_status, lastAt: row.last_at },
+    ]),
+  );
 }
 
 export async function getTask(id: number): Promise<BotTask | null> {
