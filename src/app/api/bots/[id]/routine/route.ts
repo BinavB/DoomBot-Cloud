@@ -1,9 +1,13 @@
 import { NextResponse } from "next/server";
 import { getBot, setRoutine } from "@/lib/bots/store";
 import { normalizeRoutine } from "@/lib/bots/validate";
+import { currentUserIsGuest } from "@/lib/auth/context";
 import { withUser } from "@/lib/auth/route";
 
 export const PUT = withUser(async (request: Request, { params }: { params: Promise<{ id: string }> }) => {
+  if (currentUserIsGuest()) {
+    return NextResponse.json({ error: "Sign in with Google to schedule routines." }, { status: 403 });
+  }
   const bot = await getBot(Number((await params).id));
   if (!bot) {
     return NextResponse.json({ error: "That Doombot does not exist." }, { status: 404 });

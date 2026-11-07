@@ -6,6 +6,7 @@ import type { AttachmentsApi } from "@/app/_components/chat/use-attachments";
 import { VoiceInput } from "@/app/_components/voice-input";
 import { Icon } from "@/components/icon";
 import { StatusPill } from "@/components/status-pill";
+import { useTourState } from "@/components/tour/tour-store";
 
 interface ChatComposerProps {
   draft: string;
@@ -20,6 +21,7 @@ interface ChatComposerProps {
 }
 
 export function ChatComposer({ draft, onDraft, composerRef, busy, attachments, onSubmit, onKeyDown, onStop, onTranscript }: ChatComposerProps) {
+  const { hintSeen } = useTourState();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const hasAttachment = attachments.image !== null || attachments.pdf !== null;
 
@@ -49,7 +51,7 @@ export function ChatComposer({ draft, onDraft, composerRef, busy, attachments, o
           {attachments.error && <span role="alert" className="text-danger">{attachments.error}</span>}
         </div>
       )}
-      <form onSubmit={onSubmit} className="mx-auto flex w-full max-w-3xl items-end gap-1 rounded-[1.75rem] border border-line bg-panel py-1.5 pr-1.5 pl-2 focus-within:border-doom sm:gap-2">
+      <form data-tour="composer" onSubmit={onSubmit} className="mx-auto flex w-full max-w-3xl items-end gap-1 rounded-[1.75rem] border border-line bg-panel py-1.5 pr-1.5 pl-2 focus-within:border-doom sm:gap-2">
         <label htmlFor="composer" className="sr-only">
           Message DOOMBOT
         </label>
@@ -77,7 +79,7 @@ export function ChatComposer({ draft, onDraft, composerRef, busy, attachments, o
                 event.target.value = "";
               }}
             />
-            <button type="button" onClick={() => fileInputRef.current?.click()} aria-label="Attach an image or PDF" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-muted hover:bg-raised hover:text-ink">
+            <button type="button" data-tour="composer-attach" onClick={() => fileInputRef.current?.click()} aria-label="Attach an image or PDF" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-muted hover:bg-raised hover:text-ink">
               <Icon name="add_photo_alternate" size={22} />
             </button>
             <VoiceInput onTranscript={onTranscript} />
@@ -98,9 +100,11 @@ export function ChatComposer({ draft, onDraft, composerRef, busy, attachments, o
           </button>
         )}
       </form>
-      <p className="mx-auto mt-2 hidden w-full max-w-3xl text-center text-xs text-muted md:block">
-        Enter to send, Shift+Enter for a new line. Actions that change things wait for your approval.
-      </p>
+      {!hintSeen && (
+        <p className="mx-auto mt-2 hidden w-full max-w-3xl text-center text-xs text-muted md:block">
+          Enter to send, Shift+Enter for a new line. Actions that change things wait for your approval.
+        </p>
+      )}
     </div>
   );
 }

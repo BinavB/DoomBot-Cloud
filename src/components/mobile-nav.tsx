@@ -43,6 +43,7 @@ export function MobileNav({ title, actions, pendingCount, unreadCount, account }
         <div className="relative flex h-14 items-center gap-1 px-2">
           <button
             ref={menuButtonRef}
+            data-tour="mobile-menu"
             type="button"
             onClick={() => setOpen(true)}
             aria-label="Open menu"

@@ -1,14 +1,21 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { cookieOptions } from "@/lib/auth/cookies";
 import { finishLogin, loginCookieName, loginCookiePath, parseLoginAttempt } from "@/lib/auth/google-login";
-import { createSessionToken, sessionCookieName, sessionLifetimeSeconds } from "@/lib/auth/session";
-import { upsertGoogleUser } from "@/lib/auth/users";
+import { claimGuestAccount } from "@/lib/auth/guest";
+import { readSessionToken, createSessionToken, sessionCookieName, sessionLifetimeSeconds } from "@/lib/auth/session";
+import { findSession, upsertGoogleUser, type GoogleProfile, type SignedInUser } from "@/lib/auth/users";
 import { config } from "@/lib/config";
 
 function redirectTo(path: string): NextResponse {
   const response = NextResponse.redirect(new URL(path, config.appUrl));
   response.cookies.set(loginCookieName, "", cookieOptions(0, loginCookiePath));
   return response;
+}
+
+async function signIn(request: NextRequest, profile: GoogleProfile): Promise<SignedInUser> {
+  const claims = await readSessionToken(request.cookies.get(sessionCookieName)?.value);
+  const session = claims === null ? null : await findSession(claims.userId, claims.version);
+  return session?.user.guest ? claimGuestAccount(session.user.id, profile) : upsertGoogleUser(profile);
 }
 
 export async function GET(request: NextRequest) {
@@ -25,7 +32,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const { user, sessionVersion } = await upsertGoogleUser(await finishLogin(code, attempt));
+    const { user, sessionVersion } = await signIn(request, await finishLogin(code, attempt));
     const response = redirectTo("/");
     response.cookies.set(sessionCookieName, await createSessionToken(user.id, sessionVersion), cookieOptions(sessionLifetimeSeconds));
     return response;

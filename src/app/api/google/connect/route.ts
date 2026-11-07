@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { cookieOptions } from "@/lib/auth/cookies";
-import { currentUserId } from "@/lib/auth/context";
+import { currentUserId, currentUserIsGuest } from "@/lib/auth/context";
 import { withUser } from "@/lib/auth/route";
 import { findUser } from "@/lib/auth/users";
 import { config } from "@/lib/config";
@@ -12,6 +12,9 @@ import {
 } from "@/lib/google/oauth";
 
 export const GET = withUser(async () => {
+  if (currentUserIsGuest()) {
+    return NextResponse.redirect(new URL("/login?error=guest-google", config.appUrl));
+  }
   try {
     const user = await findUser(currentUserId());
     const { url, state } = createAuthorizationUrl(user?.email ?? "");

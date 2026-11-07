@@ -10,6 +10,16 @@ export async function recordUsage(model: string, promptTokens: number, completio
   );
 }
 
+export async function guestTokensUsedToday(): Promise<number> {
+  const row = await queryRow<{ total: number }>(
+    `SELECT COALESCE(SUM(u.prompt_tokens + u.completion_tokens), 0) AS total
+     FROM usage u JOIN users s ON s.id = u.user_id
+     WHERE u.day = ? AND s.google_sub LIKE 'guest:%'`,
+    [currentDay(config.timezone)],
+  );
+  return row?.total ?? 0;
+}
+
 export async function tokensUsedToday(): Promise<number> {
   const row = await queryRow<{ total: number }>(
     "SELECT COALESCE(SUM(prompt_tokens + completion_tokens), 0) AS total FROM usage WHERE user_id = ? AND day = ?",

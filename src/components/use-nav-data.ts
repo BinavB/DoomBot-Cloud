@@ -7,6 +7,7 @@ export interface Account {
   name: string;
   email: string;
   picture: string | null;
+  guest?: boolean;
 }
 
 export interface NavData {

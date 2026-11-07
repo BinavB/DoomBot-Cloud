@@ -5,6 +5,7 @@ import { AgentError } from "@/lib/errors";
 interface UserContext {
   userId: number;
   timeZone: string;
+  guest: boolean;
 }
 
 const globalForContext = globalThis as unknown as {
@@ -13,8 +14,12 @@ const globalForContext = globalThis as unknown as {
 
 const storage = (globalForContext.doombotUserContext ??= new AsyncLocalStorage<UserContext>());
 
-export function runAsUser<T>(userId: number, timeZone: string, work: () => T): T {
-  return storage.run({ userId, timeZone }, work);
+export function runAsUser<T>(userId: number, timeZone: string, work: () => T, guest = false): T {
+  return storage.run({ userId, timeZone, guest }, work);
+}
+
+export function currentUserIsGuest(): boolean {
+  return storage.getStore()?.guest ?? false;
 }
 
 export function currentUserId(): number {

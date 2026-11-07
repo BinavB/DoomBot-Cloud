@@ -51,6 +51,7 @@ export function BotList({
       </ul>
       <button
         type="button"
+        data-tour="bots-new"
         onClick={onNew}
         className="mt-2 flex items-center justify-center gap-2 rounded-xl border border-dashed border-line px-3 py-2.5 text-sm font-medium hover:border-doom hover:text-doom"
       >

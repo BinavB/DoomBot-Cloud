@@ -1,4 +1,5 @@
 import { runAsUser } from "@/lib/auth/context";
+import { removeStaleGuests } from "@/lib/auth/guest";
 import { listActiveUsers } from "@/lib/auth/users";
 import { startTask } from "@/lib/bots/run";
 import { listRoutineBots, markRoutineRan } from "@/lib/bots/store";
@@ -81,6 +82,9 @@ export async function runScheduledWork(): Promise<void> {
     }),
     runDueRoutines(at).catch((error: unknown) => {
       console.error("Doombot routines failed:", error);
+    }),
+    removeStaleGuests().catch((error: unknown) => {
+      console.error("Guest cleanup failed:", error);
     }),
   ]);
 }

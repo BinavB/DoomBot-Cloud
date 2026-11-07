@@ -1,6 +1,8 @@
 import { config, type AiProvider } from "@/lib/config";
 import { AgentError, ProviderHttpError } from "@/lib/errors";
-import { recordUsage, tokensUsedToday } from "@/lib/usage";
+import { currentUserIsGuest } from "@/lib/auth/context";
+import { guestDailyTokenLimit, guestsDailyTokenBudget } from "@/lib/auth/guest-limits";
+import { guestTokensUsedToday, recordUsage, tokensUsedToday } from "@/lib/usage";
 
 export interface ToolCall {
   id: string;
@@ -252,7 +254,12 @@ export async function createChatCompletion(
       "No AI key is set. Add GEMINI_API_KEY or DEEPSEEK_API_KEY to .env.local and restart the server.",
     );
   }
-  if ((await tokensUsedToday()) >= config.dailyTokenLimit) {
+  if (currentUserIsGuest()) {
+    const [own, everyone] = await Promise.all([tokensUsedToday(), guestTokensUsedToday()]);
+    if (own >= guestDailyTokenLimit || everyone >= guestsDailyTokenBudget) {
+      throw new AgentError("Guest use is full for today. Sign in with Google to keep going, or come back tomorrow.");
+    }
+  } else if ((await tokensUsedToday()) >= config.dailyTokenLimit) {
     throw new AgentError(
       "The daily token limit was reached. Raise DAILY_TOKEN_LIMIT or try again tomorrow.",
     );

@@ -6,7 +6,11 @@ export interface User {
   email: string;
   name: string;
   picture: string | null;
+  guest: boolean;
 }
+
+export const guestSubPrefix = "guest:";
+const guestColumn = `(google_sub LIKE '${guestSubPrefix}%')`;
 
 export interface GoogleProfile {
   sub: string;
@@ -33,7 +37,7 @@ export async function upsertGoogleUser(profile: GoogleProfile): Promise<SignedIn
   );
   const signedIn = row as User & { session_version: number };
   return {
-    user: { id: signedIn.id, email: signedIn.email, name: signedIn.name, picture: signedIn.picture },
+    user: { id: signedIn.id, email: signedIn.email, name: signedIn.name, picture: signedIn.picture, guest: false },
     sessionVersion: signedIn.session_version,
   };
 }
@@ -48,8 +52,9 @@ export interface Session {
 }
 
 export async function findSession(userId: number, version: number): Promise<Session | null> {
-  const row = await queryRow<User & { time_zone: string | null; stale: number }>(
+  const row = await queryRow<Omit<User, "guest"> & { guest: number; time_zone: string | null; stale: number }>(
     `SELECT u.id AS id, u.email AS email, u.name AS name, u.picture AS picture, t.time_zone AS time_zone,
+            (u.google_sub LIKE '${guestSubPrefix}%') AS guest,
             (u.last_seen_at < datetime('now', ?)) AS stale
      FROM users u LEFT JOIN user_timezones t ON t.user_id = u.id
      WHERE u.id = ? AND u.session_version = ?`,
@@ -62,13 +67,16 @@ export async function findSession(userId: number, version: number): Promise<Sess
     runStatement("UPDATE users SET last_seen_at = datetime('now') WHERE id = ?", [userId]).catch(() => undefined);
   }
   return {
-    user: { id: row.id, email: row.email, name: row.name, picture: row.picture },
+    user: { id: row.id, email: row.email, name: row.name, picture: row.picture, guest: row.guest === 1 },
     timeZone: row.time_zone ?? config.timezone,
   };
 }
 
 export async function findUser(userId: number): Promise<User | null> {
-  const row = await queryRow<User>("SELECT id, email, name, picture FROM users WHERE id = ?", [userId]);
+  const row = await queryRow<Omit<User, "guest"> & { guest: number }>(
+    `SELECT id, email, name, picture, ${guestColumn} AS guest FROM users WHERE id = ?`,
+    [userId],
+  );
   if (!row) {
     return null;
   }
@@ -76,7 +84,7 @@ export async function findUser(userId: number): Promise<User | null> {
     userId,
     `-${seenRefreshMinutes} minutes`,
   ]);
-  return row;
+  return { id: row.id, email: row.email, name: row.name, picture: row.picture, guest: row.guest === 1 };
 }
 
 export async function getUserTimeZone(userId: number): Promise<string> {
@@ -88,7 +96,7 @@ export async function listActiveUsers(): Promise<{ id: number; timeZone: string 
   const rows = await queryRows<{ id: number; time_zone: string | null }>(
     `SELECT u.id AS id, t.time_zone AS time_zone FROM users u
      LEFT JOIN user_timezones t ON t.user_id = u.id
-     WHERE u.last_seen_at >= datetime('now', ?)`,
+     WHERE u.last_seen_at >= datetime('now', ?) AND u.google_sub NOT LIKE '${guestSubPrefix}%'`,
     [`-${activeWindowDays} days`],
   );
   return rows.map((row) => ({ id: row.id, timeZone: row.time_zone ?? config.timezone }));

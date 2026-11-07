@@ -83,6 +83,7 @@ export function SidebarChats({ onNavigate, pages }: SidebarChatsProps) {
     <div className="flex min-h-0 flex-1 flex-col gap-2">
       <button
         type="button"
+        data-tour="sidebar-new"
         onClick={() => void handlePrimary()}
         className="flex h-10 items-center gap-2 rounded-xl border border-line px-3 text-sm font-medium hover:bg-raised"
       >
@@ -91,6 +92,7 @@ export function SidebarChats({ onNavigate, pages }: SidebarChatsProps) {
       </button>
       {pages}
       <input
+        data-tour="sidebar-search"
         type="search"
         value={query}
         onChange={(event) => search(event.target.value)}

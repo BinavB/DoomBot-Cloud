@@ -19,6 +19,6 @@ export function withUser<Args extends unknown[]>(
     if (!session) {
       return NextResponse.json({ error: "Sign in to continue." }, { status: 401 });
     }
-    return runAsUser(session.user.id, session.timeZone, () => handler(...args));
+    return runAsUser(session.user.id, session.timeZone, () => handler(...args), session.user.guest);
   };
 }

@@ -18,6 +18,8 @@ const errorMessages: Record<string, string> = {
   denied: "Google sign-in was cancelled. Try again when you are ready.",
   expired: "The sign-in took too long or was interrupted. Try again.",
   failed: "Google could not confirm your account. Try again, or use another account.",
+  "guests-full": "Too many guests joined in the last hour. Sign in with Google, or try again later.",
+  "guest-google": "Sign in with Google first. Then you can connect Gmail and Calendar.",
 };
 
 export function LoginCard() {
@@ -45,6 +47,14 @@ export function LoginCard() {
         <Icon name="login" size={18} />
         Continue with Google
       </a>
+      <form method="post" action="/api/auth/guest" className="flex w-full flex-col items-center gap-2">
+        <button type="submit" className="h-11 w-full rounded-xl border border-line px-4 text-sm font-medium hover:bg-raised">
+          Skip sign-in, try as a guest
+        </button>
+        <p className="text-xs leading-relaxed text-muted">
+          Guests get a few messages a day. Connect Google later for the proactive features and to keep your chats.
+        </p>
+      </form>
     </section>
   );
 }

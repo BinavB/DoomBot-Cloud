@@ -36,7 +36,10 @@ export async function exportAccountData(): Promise<Record<string, unknown[]>> {
 }
 
 export async function deleteAccountData(): Promise<void> {
-  const userId = currentUserId();
+  await deleteUserData(currentUserId());
+}
+
+export async function deleteUserData(userId: number): Promise<void> {
   for (const table of userTables) {
     await runStatement(`DELETE FROM ${table} WHERE user_id = ?`, [userId]);
   }
