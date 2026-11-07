@@ -137,7 +137,7 @@ export function SidebarChats({ onNavigate, pages }: SidebarChatsProps) {
                           label={`Actions for ${conversation.title}`}
                           trigger={<Icon name="more_horiz" size={20} />}
                           items={chatMenuItems(conversation.id, conversation.title)}
-                          width="w-60"
+                          width="w-52"
                           triggerClassName="mr-1 flex h-8 w-8 items-center justify-center rounded-lg text-muted hover:bg-panel hover:text-ink md:opacity-0 md:group-hover:opacity-100 md:focus-visible:opacity-100"
                         />
                       </li>
