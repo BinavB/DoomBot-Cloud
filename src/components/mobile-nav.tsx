@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { DoomMark } from "@/components/doom-mark";
 import { Icon } from "@/components/icon";
 import { SidebarChats } from "@/components/sidebar-chats";
@@ -12,7 +12,7 @@ import { UserMenu } from "@/components/user-menu";
 const iconButton =
   "relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-ink transition-colors hover:bg-raised";
 
-export function MobileNav({ title, pendingCount, unreadCount, account }: NavData & { title: string }) {
+export function MobileNav({ title, actions, pendingCount, unreadCount, account }: NavData & { title: string; actions?: ReactNode }) {
   const [open, setOpen] = useState(false);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
@@ -54,6 +54,7 @@ export function MobileNav({ title, pendingCount, unreadCount, account }: NavData
             {pendingCount > 0 && <span aria-hidden className="absolute top-2.5 right-2.5 h-2 w-2 rounded-full bg-doom" />}
           </button>
           <h1 className="min-w-0 flex-1 truncate text-center font-display text-base font-semibold">{title}</h1>
+          {actions}
           <Link href="/alerts" aria-label={unreadCount > 0 ? `Alerts, ${unreadCount} unread` : "Alerts"} className={iconButton}>
             <Icon name="notifications" size={22} />
             {unreadCount > 0 && <span aria-hidden className="absolute top-2.5 right-2.5 h-2 w-2 rounded-full bg-danger" />}

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { chatMenuItems } from "@/components/chat-menu-items";
-import { setMode, useChatState } from "@/components/chat-store";
+import { createChat, setMode, useChatState } from "@/components/chat-store";
 import { Icon } from "@/components/icon";
 import { Menu, type MenuItem } from "@/components/menu";
 
@@ -11,7 +11,7 @@ interface ModelInfo {
   backups: string[];
 }
 
-const iconButton = "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-muted hover:bg-raised hover:text-ink";
+const iconButton = "flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-muted hover:bg-raised hover:text-ink";
 
 export function ModelMenu({ compact = false }: { compact?: boolean }) {
   const { mode } = useChatState();
@@ -70,10 +70,14 @@ export function ChatActionsMenu() {
   );
 }
 
-export function ChatHeaderActions({ compact = false }: { compact?: boolean }) {
+export function ChatHeaderActions({ withNewChat = false }: { withNewChat?: boolean }) {
   return (
-    <div className="flex items-center gap-1">
-      <ModelMenu compact={compact} />
+    <div className="flex items-center">
+      {withNewChat && (
+        <button type="button" onClick={() => void createChat()} aria-label="New chat" className={iconButton}>
+          <Icon name="edit_square" size={20} />
+        </button>
+      )}
       <ChatActionsMenu />
     </div>
   );

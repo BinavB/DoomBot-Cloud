@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 
 export default function ChatPage() {
   return (
-    <AppShell title="Chat" actions={<ChatHeaderActions />}>
+    <AppShell title="Chat" actions={<ChatHeaderActions />} mobileActions={<ChatHeaderActions withNewChat />}>
       <ChatView />
     </AppShell>
   );

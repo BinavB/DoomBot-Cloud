@@ -1,13 +1,14 @@
 "use client";
 
 import Link from "next/link";
+import type { ReactNode } from "react";
 import { DoomMark } from "@/components/doom-mark";
 import { MobileNav } from "@/components/mobile-nav";
 import { SidebarChats } from "@/components/sidebar-chats";
 import { useNavData } from "@/components/use-nav-data";
 import { UserMenu } from "@/components/user-menu";
 
-export function SidebarNav({ title }: { title: string }) {
+export function SidebarNav({ title, actions }: { title: string; actions?: ReactNode }) {
   const navData = useNavData();
 
   return (
@@ -23,7 +24,7 @@ export function SidebarNav({ title }: { title: string }) {
         <SidebarChats />
         <UserMenu account={navData.account} pendingCount={navData.pendingCount} unreadCount={navData.unreadCount} />
       </nav>
-      <MobileNav title={title} {...navData} />
+      <MobileNav title={title} actions={actions} {...navData} />
     </>
   );
 }

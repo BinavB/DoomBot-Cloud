@@ -7,15 +7,16 @@ interface AppShellProps {
   children: ReactNode;
   bare?: boolean;
   actions?: ReactNode;
+  mobileActions?: ReactNode;
 }
 
-export function AppShell({ title, children, bare = false, actions }: AppShellProps) {
+export function AppShell({ title, children, bare = false, actions, mobileActions }: AppShellProps) {
   if (bare) {
     return <main className="flex min-h-dvh items-center justify-center px-4 py-10">{children}</main>;
   }
   return (
     <div className="fixed inset-0 flex flex-col overflow-hidden md:flex-row">
-      <SidebarNav title={title} />
+      <SidebarNav title={title} actions={mobileActions} />
       <div className="flex min-h-0 min-w-0 flex-1 flex-col">
         <header className="hidden h-14 shrink-0 items-center justify-between gap-4 border-b border-line px-8 md:flex">
           <h1 className="font-display text-base font-semibold">{title}</h1>
