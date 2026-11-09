@@ -18,6 +18,7 @@ const userTables = [
   "shared_chats",
   "user_memories",
   "user_settings",
+  "user_briefing_topics",
   "user_timezones",
   "notes",
   "rate_limits",

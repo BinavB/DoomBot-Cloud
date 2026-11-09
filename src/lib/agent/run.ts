@@ -41,7 +41,7 @@ function systemPrompt(instructions: string, memories: string[]): string {
     "Ask_*_agent tools hand a task to a Doombot, which has its own private memory and reports back text. Use the Doombot whose job fits the task.",
     "As chief you can read every Doombot's private memory and tasks, and you can create, update and assign Doombots and tasks. Call list_doombots first to find ids.",
     "When the user asks how the Doombots are working or what they did, call list_doombots and list_doombot_tasks yourself and report each bot's status, last result and any failures in a short summary. Never tell the user to run tools.",
-    "Deleting a Doombot or a Doombot task always waits for the user's approval. To-dos can be added, updated and deleted directly.",
+    "Deleting a Doombot, a Doombot task or a to-do always waits for the user's approval. Renaming or ticking off to-dos is direct.",
     "Actions marked as waiting for approval are not done until the user approves them.",
     "Never say such an action is complete. Say it is waiting for approval.",
     "Use only facts from tools or the conversation.",

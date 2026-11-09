@@ -44,7 +44,7 @@ export const tours: Record<TourKey, TourStep[]> = {
       id: "composer",
       targets: ["composer"],
       title: "Give your command",
-      body: "Type here and press Enter to send. Shift+Enter adds a new line.",
+      body: "Type here. Press Enter to send and Shift+Enter for a new line. Actions that change things wait for your approval.",
       feature: "chat",
     },
     {

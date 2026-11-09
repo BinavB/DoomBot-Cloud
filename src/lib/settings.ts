@@ -1,5 +1,6 @@
 import { currentUserId } from "@/lib/auth/context";
 import { config } from "@/lib/config";
+import { defaultTopics, normalizeTopics, type TopicId } from "@/lib/briefing/topics";
 import { isValidTimeZone } from "@/lib/time";
 import { queryRow, queryRows, runStatement } from "@/lib/database";
 
@@ -25,6 +26,26 @@ export async function saveCustomInstructions(text: string): Promise<void> {
     `INSERT INTO user_settings (user_id, custom_instructions) VALUES (?, ?)
      ON CONFLICT(user_id) DO UPDATE SET custom_instructions = excluded.custom_instructions`,
     [currentUserId(), text.trim().slice(0, maxInstructionsLength)],
+  );
+}
+
+export async function getBriefingTopics(): Promise<TopicId[]> {
+  const row = await queryRow<{ topics: string }>("SELECT topics FROM user_briefing_topics WHERE user_id = ?", [currentUserId()]);
+  if (!row) {
+    return defaultTopics;
+  }
+  try {
+    return normalizeTopics(JSON.parse(row.topics));
+  } catch {
+    return defaultTopics;
+  }
+}
+
+export async function saveBriefingTopics(topics: TopicId[]): Promise<void> {
+  await runStatement(
+    `INSERT INTO user_briefing_topics (user_id, topics) VALUES (?, ?)
+     ON CONFLICT(user_id) DO UPDATE SET topics = excluded.topics`,
+    [currentUserId(), JSON.stringify(topics)],
   );
 }
 

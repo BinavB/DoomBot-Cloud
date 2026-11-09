@@ -10,7 +10,6 @@ import { useChatScroll } from "@/app/_components/chat/use-chat-scroll";
 import { createChat, dismissShareNotice, refreshChats, setChatBusy, setChatError, stopSharing, useChatState } from "@/components/chat-store";
 import { announceApprovalsChanged } from "@/components/events";
 import { announceStatus, startStatus } from "@/components/status-store";
-import { markHintSeen } from "@/components/tour/tour-store";
 import { readEvents } from "@/lib/chat-stream";
 import { speak, stopSpeaking } from "@/lib/speech";
 
@@ -68,7 +67,6 @@ export function ChatView() {
       return;
     }
     attachments.clear();
-    markHintSeen();
     setChatBusy(true);
     setChatError(null);
     setShowApprovalNotice(false);

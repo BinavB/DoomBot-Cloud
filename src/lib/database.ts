@@ -207,6 +207,11 @@ const schema = `
     custom_instructions TEXT NOT NULL DEFAULT ''
   );
 
+  CREATE TABLE IF NOT EXISTS user_briefing_topics (
+    user_id INTEGER PRIMARY KEY,
+    topics TEXT NOT NULL
+  );
+
   CREATE TABLE IF NOT EXISTS google_tokens (
     user_id INTEGER PRIMARY KEY,
     refresh_token TEXT NOT NULL,

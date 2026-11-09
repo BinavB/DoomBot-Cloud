@@ -1,3 +1,4 @@
+import { findTopic, hackerNewsFeed, type TopicId } from "@/lib/briefing/topics";
 import { fetchJson, fetchText } from "@/lib/http";
 
 interface FeedHeadline {
@@ -5,7 +6,6 @@ interface FeedHeadline {
   link: string;
 }
 
-const worldFeedUrl = "https://feeds.bbci.co.uk/news/world/rss.xml";
 const techStoriesUrl = "https://hacker-news.firebaseio.com/v0/topstories.json";
 const headlineLimit = 8;
 
@@ -33,17 +33,13 @@ export function parseRssItems(xml: string): FeedHeadline[] {
     .slice(0, headlineLimit);
 }
 
-export async function fetchWorldHeadlines(): Promise<FeedHeadline[]> {
-  return parseRssItems(await fetchText(worldFeedUrl));
-}
-
 interface HackerNewsItem {
   title?: string;
   url?: string;
   score?: number;
 }
 
-export async function fetchTechHeadlines(): Promise<FeedHeadline[]> {
+async function fetchHackerNewsHeadlines(): Promise<FeedHeadline[]> {
   const ids = (await fetchJson<number[]>(techStoriesUrl)).slice(0, headlineLimit);
   const items = await Promise.all(
     ids.map((id) =>
@@ -56,4 +52,9 @@ export async function fetchTechHeadlines(): Promise<FeedHeadline[]> {
       title: item.title ?? "",
       link: item.url ?? "",
     }));
+}
+
+export async function fetchTopicHeadlines(id: TopicId): Promise<FeedHeadline[]> {
+  const { feedUrl } = findTopic(id);
+  return feedUrl === hackerNewsFeed ? fetchHackerNewsHeadlines() : parseRssItems(await fetchText(feedUrl));
 }

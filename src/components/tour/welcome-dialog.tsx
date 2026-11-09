@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useId, useRef, useState } from "react";
+import { BriefingTopicsPicker, saveBriefingTopics } from "@/components/briefing-topics-picker";
+import { defaultTopics, type TopicId } from "@/lib/briefing/topics";
 import { features, welcomeFeatures, type FeatureId } from "@/lib/tour/features";
 import { FeatureBadge } from "./feature-badge";
 import { GoogleAction } from "./google-action";
@@ -22,8 +24,14 @@ export function WelcomeDialog({ guest, onChoose }: WelcomeDialogProps) {
   const titleId = useId();
   const startRef = useRef<HTMLButtonElement>(null);
   const [learning, setLearning] = useState<FeatureId | null>(null);
+  const [topics, setTopics] = useState<TopicId[]>(defaultTopics);
   const title = useDecodeText("Doom awaits your command");
-  useEscape(() => onChoose(false), learning === null);
+  function choose(wantsTour: boolean) {
+    void saveBriefingTopics(topics);
+    onChoose(wantsTour);
+  }
+
+  useEscape(() => choose(false), learning === null);
 
   useEffect(() => {
     startRef.current?.focus({ preventScroll: true });
@@ -67,6 +75,11 @@ export function WelcomeDialog({ guest, onChoose }: WelcomeDialogProps) {
               })}
             </ul>
 
+            <div className="doom-rise mx-6 mt-6 flex flex-col gap-3" style={{ animationDelay: `${featureDelayMilliseconds + welcomeFeatures.length * featureStaggerMilliseconds}ms` }}>
+              <p className="text-sm font-semibold">What should your morning briefing cover?</p>
+              <BriefingTopicsPicker selected={topics} onChange={setTopics} />
+            </div>
+
             <div
               className="doom-rise mx-6 mt-6 flex flex-col gap-3 border-l-2 border-signal bg-raised/60 px-5 py-4 sm:mx-10 sm:flex-row sm:items-center"
               style={{ animationDelay: `${featureDelayMilliseconds + welcomeFeatures.length * featureStaggerMilliseconds}ms` }}
@@ -90,14 +103,14 @@ export function WelcomeDialog({ guest, onChoose }: WelcomeDialogProps) {
                 <button
                   ref={startRef}
                   type="button"
-                  onClick={() => onChoose(true)}
+                  onClick={() => choose(true)}
                   className="doom-pulse h-11 rounded-xl bg-doom px-6 text-sm font-semibold text-canvas"
                 >
                   Show me around
                 </button>
                 <button
                   type="button"
-                  onClick={() => onChoose(false)}
+                  onClick={() => choose(false)}
                   className="h-11 rounded-xl border border-line px-6 text-sm font-medium hover:bg-raised"
                 >
                   No thanks

@@ -33,9 +33,11 @@ describe("to-dos", () => {
     expect((await asCarol(() => listTodos())).map((todo) => todo.id)).toContain(open.id);
   });
 
-  it("lets Doombots add, update and delete tasks", async () => {
+  it("lets Doombots add and update tasks, and makes deletes wait for approval", async () => {
     const allowed = botAllowedToolInfos().map((tool) => tool.name);
-    expect(allowed).toEqual(expect.arrayContaining(["add_todo", "update_todo", "delete_todo"]));
+    expect(allowed).toEqual(expect.arrayContaining(["add_todo", "update_todo"]));
+    expect(allowed).not.toContain("delete_todo");
+    expect(findTool("delete_todo")?.requiresApproval).toBe(true);
     const todo = await asCarol(() => addTodo("call the bank"));
     await asCarol(() => findTool("update_todo")!.run({ todo_id: todo.id, done: true }));
     expect((await asCarol(() => listTodos())).find((item) => item.id === todo.id)?.done).toBe(true);

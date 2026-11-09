@@ -114,7 +114,11 @@ const tools: AgentTool[] = [
       required: ["todo_id"],
     },
     requiresApproval: false,
-    summarize: (args) => `Update to-do #${String(args.todo_id)}`,
+    summarize: async (args) => {
+      const todo = (await listTodos()).find((item) => item.id === Number(args.todo_id));
+      const change = typeof args.title === "string" ? `rename "${todo?.title ?? "to-do"}" to "${args.title.trim()}"` : `update "${todo?.title ?? `#${String(args.todo_id)}`}"`;
+      return `To-do: ${change}`;
+    },
     run: async (args) => {
       const id = readTodoId(args);
       const title = args.title === undefined ? undefined : readText(args, "title", maxTodoTitleLength);
@@ -131,14 +135,17 @@ const tools: AgentTool[] = [
   },
   {
     name: "delete_todo",
-    description: "Delete a to-do item from the list. Use the id from list_todos.",
+    description: "Delete a to-do item from the list. This always waits for the user's approval. Use the id from list_todos.",
     parameters: {
       type: "object",
       properties: { todo_id: { type: "integer", description: "The to-do id from list_todos." } },
       required: ["todo_id"],
     },
-    requiresApproval: false,
-    summarize: (args) => `Delete to-do #${String(args.todo_id)}`,
+    requiresApproval: true,
+    summarize: async (args) => {
+      const todo = (await listTodos()).find((item) => item.id === Number(args.todo_id));
+      return todo ? `Delete to-do "${todo.title}"` : `Delete to-do #${String(args.todo_id)}`;
+    },
     run: async (args) => {
       const id = readTodoId(args);
       if (!(await deleteTodo(id))) {

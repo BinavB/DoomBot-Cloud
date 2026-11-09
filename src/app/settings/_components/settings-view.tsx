@@ -4,7 +4,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { Icon } from "@/components/icon";
+import { BriefingTopicsPicker } from "@/components/briefing-topics-picker";
 import { installApp, isInstalled, subscribeInstall } from "@/components/install-prompt";
+import { defaultTopics, maxTopics, type TopicId } from "@/lib/briefing/topics";
 
 interface Memory {
   id: number;
@@ -34,6 +36,7 @@ interface SettingsData {
   homeCity: string;
   memories: Memory[];
   maxInstructionsLength: number;
+  briefingTopics: TopicId[];
 }
 
 export function SettingsView() {
@@ -46,6 +49,7 @@ export function SettingsView() {
   const [deleteText, setDeleteText] = useState("");
   const [timeZone, setTimeZone] = useState("Asia/Dubai");
   const [homeCity, setHomeCity] = useState("");
+  const [topics, setTopics] = useState<TopicId[]>(defaultTopics);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -56,6 +60,7 @@ export function SettingsView() {
         setInstructions(loaded.customInstructions);
         setTimeZone(loaded.timeZone);
         setHomeCity(loaded.homeCity);
+        setTopics(loaded.briefingTopics);
       })
       .catch(() => setError("Settings could not load. Reload the page to try again."));
   }, []);
@@ -66,7 +71,7 @@ export function SettingsView() {
     const response = await fetch("/api/settings", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ customInstructions: instructions, timeZone, homeCity }),
+      body: JSON.stringify({ customInstructions: instructions, timeZone, homeCity, briefingTopics: topics }),
     });
     const saved = (await response.json().catch(() => ({}))) as { error?: string };
     setMessage(response.ok ? "Saved. Briefings and routines now follow these settings." : saved.error ?? "Could not save. Try again.");
@@ -129,6 +134,21 @@ export function SettingsView() {
             </option>
           ))}
         </select>
+      </section>
+
+      <section className="flex flex-col gap-3 rounded-2xl border border-line bg-panel p-5">
+        <h2 className="font-display text-lg font-semibold">Morning briefing news</h2>
+        <p className="text-sm text-muted">Pick up to {maxTopics} topics. Your briefing will include headlines for them.</p>
+        <BriefingTopicsPicker selected={topics} onChange={setTopics} />
+        <div className="flex justify-end">
+          <button
+            type="button"
+            onClick={() => void saveSettings()}
+            className="h-10 rounded-xl bg-doom px-4 text-sm font-semibold text-canvas"
+          >
+            Save settings
+          </button>
+        </div>
       </section>
 
       <section className="flex flex-col gap-3 rounded-2xl border border-line bg-panel p-5">

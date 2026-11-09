@@ -6,7 +6,6 @@ import type { AttachmentsApi } from "@/app/_components/chat/use-attachments";
 import { VoiceInput } from "@/app/_components/voice-input";
 import { Icon } from "@/components/icon";
 import { StatusPill } from "@/components/status-pill";
-import { useTourState } from "@/components/tour/tour-store";
 
 interface ChatComposerProps {
   draft: string;
@@ -21,7 +20,6 @@ interface ChatComposerProps {
 }
 
 export function ChatComposer({ draft, onDraft, composerRef, busy, attachments, onSubmit, onKeyDown, onStop, onTranscript }: ChatComposerProps) {
-  const { hintSeen } = useTourState();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const hasAttachment = attachments.image !== null || attachments.pdf !== null;
 
@@ -100,11 +98,6 @@ export function ChatComposer({ draft, onDraft, composerRef, busy, attachments, o
           </button>
         )}
       </form>
-      {!hintSeen && (
-        <p className="mx-auto mt-2 hidden w-full max-w-3xl text-center text-xs text-muted md:block">
-          Enter to send, Shift+Enter for a new line. Actions that change things wait for your approval.
-        </p>
-      )}
     </div>
   );
 }

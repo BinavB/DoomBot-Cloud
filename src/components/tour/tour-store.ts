@@ -8,7 +8,6 @@ export type TourChoice = "unset" | "tour" | "none";
 interface StoredTour {
   choice: TourChoice;
   seen: TourKey[];
-  hintSeen: boolean;
 }
 
 export interface TourState extends StoredTour {
@@ -16,8 +15,8 @@ export interface TourState extends StoredTour {
 }
 
 const storageKey = "doombot.tour";
-const serverState: TourState = { choice: "none", seen: [], hintSeen: true, dismissed: [] };
-const freshState: TourState = { choice: "unset", seen: [], hintSeen: false, dismissed: [] };
+const serverState: TourState = { choice: "none", seen: [], dismissed: [] };
+const freshState: TourState = { choice: "unset", seen: [], dismissed: [] };
 const listeners = new Set<() => void>();
 let current: TourState | null = null;
 
@@ -31,7 +30,6 @@ function load(): TourState {
     return {
       choice: parsed.choice === "tour" || parsed.choice === "none" ? parsed.choice : "unset",
       seen: Array.isArray(parsed.seen) ? parsed.seen : [],
-      hintSeen: parsed.hintSeen === true,
       dismissed: [],
     };
   } catch {
@@ -51,7 +49,7 @@ function subscribe(listener: () => void): () => void {
 
 function update(change: Partial<TourState>): void {
   current = { ...getSnapshot(), ...change };
-  const stored: StoredTour = { choice: current.choice, seen: current.seen, hintSeen: current.hintSeen };
+  const stored: StoredTour = { choice: current.choice, seen: current.seen };
   try {
     window.localStorage.setItem(storageKey, JSON.stringify(stored));
   } catch {
@@ -83,10 +81,4 @@ export function skipAllTours(): void {
 
 export function replayTours(): void {
   update({ choice: "unset", seen: [], dismissed: [] });
-}
-
-export function markHintSeen(): void {
-  if (!getSnapshot().hintSeen) {
-    update({ hintSeen: true });
-  }
 }
