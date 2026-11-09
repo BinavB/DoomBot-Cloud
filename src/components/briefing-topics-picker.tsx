@@ -40,10 +40,11 @@ export function BriefingTopicsPicker({ selected, onChange }: BriefingTopicsPicke
   );
 }
 
-export async function saveBriefingTopics(topics: TopicId[]): Promise<void> {
-  await fetch("/api/settings", {
+export async function saveBriefingTopics(topics: TopicId[]): Promise<boolean> {
+  const response = await fetch("/api/settings", {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ briefingTopics: topics }),
-  }).catch(() => undefined);
+  }).catch(() => null);
+  return response?.ok ?? false;
 }

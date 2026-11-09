@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { Markdown } from "@/components/markdown";
+import { defaultTopics, type TopicId } from "@/lib/briefing/topics";
+import { BriefingTopics } from "./briefing-topics";
 
 interface Briefing {
   id: number;
@@ -17,11 +19,15 @@ export function BriefingView() {
   const [loaded, setLoaded] = useState(false);
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [topics, setTopics] = useState<TopicId[]>(defaultTopics);
 
   useEffect(() => {
     fetch("/api/briefing")
-      .then((response) => response.json() as Promise<{ briefing: Briefing | null }>)
-      .then((data) => setBriefing(data.briefing))
+      .then((response) => response.json() as Promise<{ briefing: Briefing | null; topics: TopicId[] }>)
+      .then((data) => {
+        setBriefing(data.briefing);
+        setTopics(data.topics);
+      })
       .catch(() => setError("Today's briefing could not load. Reload the page to try again."))
       .finally(() => setLoaded(true));
   }, []);
@@ -61,6 +67,19 @@ export function BriefingView() {
         </button>
       </div>
 
+      {loaded && (
+        <BriefingTopics
+          topics={topics}
+          busy={creating}
+          onSaved={(saved, refresh) => {
+            setTopics(saved);
+            if (refresh) {
+              void create();
+            }
+          }}
+        />
+      )}
+
       {error && (
         <p role="alert" className="rounded-xl border border-danger/40 px-4 py-3 text-sm text-danger">
           {error}
@@ -75,7 +94,7 @@ export function BriefingView() {
 
       {briefing && !briefing.summarizedByAi && (
         <p className="text-sm text-muted">
-          This shows the raw sources because the AI summary failed. Check the server log and your AI keys, then create a new briefing.
+          The AI summary was not available, so this shows the raw news and data. Try creating a new briefing in a moment.
         </p>
       )}
 
