@@ -1,6 +1,6 @@
 # DOOMBOT Cloud
 
-Live app: https://doombot-igba.onrender.com/
+Live app: https://doom-bots.onrender.com/
 
 The cloud version of DOOMBOT, a personal AI agent with a Doctor Doom theme. It keeps all data in a Turso database, so it can run on free hosts that wipe their disk, such as Render's free plan.
 
@@ -75,7 +75,7 @@ Render's free plan sleeps after 15 minutes without visitors and wipes its disk. 
 1. Sign up at https://render.com and connect your GitHub account.
 2. Choose **New → Blueprint** and pick this repository. Render reads `render.yaml` and creates a free web service named `doombot`.
 3. Fill in the values it asks for: `TURSO_DATABASE_URL`, `TURSO_AUTH_TOKEN`, the two Google values and the two AI keys.
-4. After the first deploy, copy the service address, such as `https://doombot.onrender.com`. Set `APP_URL` to it and redeploy.
+4. After the first deploy, copy the service address, such as `https://doom-bots.onrender.com`. Set `APP_URL` to it and redeploy.
 
 `AUTH_SECRET` and `CRON_SECRET` are generated for you. Copy `CRON_SECRET` from the service's **Environment** page for the next step.
 

@@ -10,6 +10,7 @@ import {
 } from "@/lib/bots/client";
 import { defaultLook, type BotLook } from "@/lib/bots/look";
 import { assistantNames } from "@/lib/bots/names";
+import { toolHelp, toolLabel } from "@/lib/bots/tool-labels";
 import { LookPicker } from "./look-picker";
 
 interface CreateFormProps {
@@ -121,8 +122,8 @@ export function CreateForm({
               className="mt-1 h-4 w-4 accent-[var(--doom)]"
             />
             <span>
-              <span className="font-medium">{tool.name}</span>
-              <span className="block text-muted">{tool.description}</span>
+              <span className="font-medium">{toolLabel(tool.name)}</span>
+              <span className="block text-muted">{toolHelp(tool.name, tool.description)}</span>
             </span>
           </label>
         ))}

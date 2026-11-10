@@ -4,6 +4,7 @@ import { useState, type FormEvent } from "react";
 import { BotAvatar } from "@/components/bot-avatar";
 import { Icon } from "@/components/icon";
 import type { BotLook } from "@/lib/bots/look";
+import { toolLabel } from "@/lib/bots/tool-labels";
 import { LookPicker } from "./look-picker";
 
 export interface ProfileBot {
@@ -135,7 +136,7 @@ export function BotProfile<Bot extends ProfileBot>({ bot, onChange, onDelete, on
         ) : (
           bot.toolNames.map((name) => (
             <span key={name} className="rounded-full bg-raised px-3 py-1 text-xs">
-              {name}
+              {toolLabel(name)}
             </span>
           ))
         )}
