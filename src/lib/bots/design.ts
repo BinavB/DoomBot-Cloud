@@ -1,5 +1,6 @@
 import { createChatCompletion } from "@/lib/ai";
 import { avatarOptions } from "@/lib/bots/look";
+import { assistantNameGuide } from "@/lib/bots/names";
 import { normalizeBotInput, type BotInput } from "@/lib/bots/validate";
 
 export interface DesignableTool {
@@ -14,7 +15,8 @@ function designInstructions(tools: DesignableTool[]): string {
   return [
     "You design Doombots: small focused assistants for one person.",
     `From the user's preferences, design 1 to ${maxDesignedBots} Doombots. Each has one clear job.`,
-    'Name each one "Doombot <Word>", with a short, memorable word.',
+    `Name each one after the Marvel AI or robot whose strength fits its job, using exactly one of these names: ${assistantNameGuide()}.`,
+    'Use each name only once. If none of them fits, name it "Doombot <Word>" with a short, memorable word.',
     "Write instructions in the second person, saying what the Doombot does and how to answer.",
     `Give each Doombot an avatar: one robot style that suits its job, chosen from: ${avatarOptions.map((option) => option.id).join(", ")}`,
     "Pick only tools from this list that the job needs:",

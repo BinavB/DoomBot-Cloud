@@ -27,6 +27,7 @@ export const colorOptions: (LookOption & { hex: string })[] = [
 ];
 
 export const builtInLooks: Record<string, BotLook> = {
+  doom_prime: { avatar: "cyclops", color: "mint" },
   calendar: { avatar: "visor", color: "sky" },
   email: { avatar: "antenna", color: "gold" },
 };

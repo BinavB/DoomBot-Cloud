@@ -9,6 +9,7 @@ import {
   type ToolInfo,
 } from "@/lib/bots/client";
 import { defaultLook, type BotLook } from "@/lib/bots/look";
+import { assistantNames } from "@/lib/bots/names";
 import { LookPicker } from "./look-picker";
 
 interface CreateFormProps {
@@ -66,10 +67,28 @@ export function CreateForm({
           value={name}
           onChange={(event) => setName(event.target.value)}
           maxLength={40}
-          placeholder="Doombot Scout"
+          placeholder="Jarvis"
           className="h-11 rounded-xl border border-line bg-canvas px-4 outline-none focus:border-doom"
         />
       </label>
+      <div className="flex flex-col gap-2">
+        <p className="text-sm text-muted">Pick a name that fits the job:</p>
+        <div className="flex flex-wrap gap-2">
+          {assistantNames.map((item) => (
+            <button
+              key={item.name}
+              type="button"
+              title={item.strength}
+              onClick={() => setName(item.name)}
+              className={`rounded-full border px-3 py-1 text-xs transition-colors ${
+                name === item.name ? "border-doom bg-doom-soft text-ink" : "border-line text-muted hover:bg-raised hover:text-ink"
+              }`}
+            >
+              {item.name}
+            </button>
+          ))}
+        </div>
+      </div>
       <label className="flex flex-col gap-2 text-sm">
         What is its job?
         <textarea

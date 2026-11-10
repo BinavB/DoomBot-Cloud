@@ -1,6 +1,7 @@
 import type { AgentTool, ToolArguments } from "@/lib/agent/tools";
 import { avatarOptions, colorOptions, readLook } from "@/lib/bots/look";
 import { describeSchedule, frequencies } from "@/lib/bots/frequency";
+import { assistantNameGuide } from "@/lib/bots/names";
 import { rerunTask, startTask } from "@/lib/bots/run";
 import {
   createBot,
@@ -142,7 +143,10 @@ export function createChiefTools(allowedBotTools: () => Set<string>): AgentTool[
       parameters: {
         type: "object",
         properties: {
-          name: { type: "string", description: 'Name like "Doombot Scout", up to 40 characters.' },
+          name: {
+            type: "string",
+            description: `Name it after the Marvel AI or robot that fits the job, from: ${assistantNameGuide()}. Otherwise use a name like "Doombot Scout". Up to 40 characters.`,
+          },
           job: { type: "string", description: "Second-person instructions describing its job." },
           avatar: {
             type: "string",

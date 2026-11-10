@@ -98,7 +98,7 @@ export function BotProfile<Bot extends ProfileBot>({ bot, onChange, onDelete, on
               </button>
             </div>
           )}
-          <p className="text-xs text-muted">{bot.builtIn ? "Built in" : "Your Doombot"}</p>
+          <p className="text-xs text-muted">{bot.builtIn ? "Default Doombot" : "Substitute Doombot"}</p>
         </div>
         <div className="flex gap-2">
           <button

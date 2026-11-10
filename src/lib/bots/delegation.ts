@@ -1,4 +1,5 @@
 import type { ToolSpec } from "@/lib/ai";
+import { defaultBotSlug } from "@/lib/bots/names";
 import { listBots, type Bot } from "@/lib/bots/store";
 
 const descriptionLength = 140;
@@ -8,7 +9,7 @@ function delegationName(bot: Bot): string {
 }
 
 export async function delegationSpecs(): Promise<ToolSpec[]> {
-  return (await listBots()).map((bot) => ({
+  return (await listBots()).filter((bot) => bot.slug !== defaultBotSlug).map((bot) => ({
     type: "function",
     function: {
       name: delegationName(bot),

@@ -1,5 +1,6 @@
 import { currentUserId } from "@/lib/auth/context";
 import { avatarOptions, builtInLooks, colorOptions, defaultLook, type BotLook } from "@/lib/bots/look";
+import { defaultBotName, defaultBotSlug } from "@/lib/bots/names";
 import type { Frequency } from "@/lib/bots/frequency";
 import type { BotInput, BotRoutineInput } from "@/lib/bots/validate";
 import { queryRow, queryRows, runStatement } from "@/lib/database";
@@ -91,18 +92,38 @@ const maxBots = 20;
 
 const builtInBots = [
   {
-    slug: "calendar",
-    name: "Doombot Chronos",
+    slug: defaultBotSlug,
+    name: defaultBotName,
     instructions:
-      "You are Doombot Chronos, the calendar specialist. Use list_calendar_today to answer. Give times and titles only. If nothing is found, say so.",
-    toolNames: ["list_calendar_today"],
+      "You are DOOM PRIME, the main controlling AI, the default Doombot and chief of all the others. Handle any task the user gives you with your tools. Be brief and practical, and say so when nothing is found.",
+    toolNames: [
+      "get_current_time",
+      "get_weather",
+      "list_todos",
+      "add_todo",
+      "update_todo",
+      "list_calendar_today",
+      "list_unread_emails",
+      "list_google_tasks",
+      "list_notes",
+    ],
+  },
+];
+
+const substituteUpgrades = [
+  {
+    slug: "calendar",
+    oldName: "Doombot Chronos",
+    name: "Friday",
+    instructions:
+      "You are Friday, a substitute Doombot for tactical day planning. Use list_calendar_today to answer. Give times and titles only. If nothing is found, say so.",
   },
   {
     slug: "email",
-    name: "Doombot Herald",
+    oldName: "Doombot Herald",
+    name: "Edith",
     instructions:
-      "You are Doombot Herald, the email specialist. Use list_unread_emails to answer. Summarize senders and subjects. You cannot send, reply or delete.",
-    toolNames: ["list_unread_emails"],
+      "You are Edith, a substitute Doombot that watches the inbox. Use list_unread_emails to answer. Summarize senders and subjects. You cannot send, reply or delete.",
   },
 ];
 
@@ -160,6 +181,12 @@ async function seedBuiltInBots(): Promise<void> {
     await runStatement(
       "INSERT OR IGNORE INTO bots (user_id, slug, name, instructions, tool_names, built_in) VALUES (?, ?, ?, ?, ?, 1)",
       [userId, bot.slug, bot.name, bot.instructions, JSON.stringify(bot.toolNames)],
+    );
+  }
+  for (const upgrade of substituteUpgrades) {
+    await runStatement(
+      "UPDATE bots SET name = ?, instructions = ?, built_in = 0 WHERE user_id = ? AND slug = ? AND name = ? AND built_in = 1",
+      [upgrade.name, upgrade.instructions, userId, upgrade.slug, upgrade.oldName],
     );
   }
   seededUsers.add(userId);
