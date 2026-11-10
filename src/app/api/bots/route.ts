@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { botAllowedToolInfos } from "@/lib/agent/tools";
 import { createBot, getAllBotActivity, listBots } from "@/lib/bots/store";
 import { normalizeBotInput } from "@/lib/bots/validate";
+import { AgentError } from "@/lib/errors";
 import { withUser } from "@/lib/auth/route";
 
 export const GET = withUser(async () => {
@@ -21,7 +22,7 @@ export const POST = withUser(async (request: Request) => {
     return NextResponse.json({ bot: await createBot(input) }, { status: 201 });
   } catch (error) {
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "The bot could not be created." },
+      { error: error instanceof AgentError ? error.message : "The bot could not be created." },
       { status: 400 },
     );
   }

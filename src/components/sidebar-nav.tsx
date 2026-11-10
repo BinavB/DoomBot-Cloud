@@ -6,6 +6,7 @@ import { DoomMark } from "@/components/doom-mark";
 import { MobileNav } from "@/components/mobile-nav";
 import { SidebarChats } from "@/components/sidebar-chats";
 import { SidebarResizer } from "@/components/sidebar-resizer";
+import { DetectTimeZone } from "@/components/detect-time-zone";
 import { TourHost } from "@/components/tour/tour-host";
 import { useSidebarWidth } from "@/components/sidebar-width-store";
 import { useNavData } from "@/components/use-nav-data";
@@ -31,6 +32,7 @@ export function SidebarNav({ title, actions }: { title: string; actions?: ReactN
         <SidebarResizer />
       </nav>
       <MobileNav title={title} actions={actions} {...navData} />
+      {navData.account && <DetectTimeZone />}
       <TourHost ready={navData.account !== null} guest={navData.account?.guest ?? false} />
     </>
   );

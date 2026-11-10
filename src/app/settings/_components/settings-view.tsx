@@ -128,7 +128,7 @@ export function SettingsView() {
           aria-label="Time zone"
           className="h-11 rounded-xl border border-line bg-panel px-3 text-base outline-none focus:border-doom md:text-[15px]"
         >
-          {timeZones.map((zone) => (
+          {(timeZones.includes(timeZone) ? timeZones : [timeZone, ...timeZones]).map((zone) => (
             <option key={zone} value={zone}>
               {zone.replace(/_/g, " ")}
             </option>

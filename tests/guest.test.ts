@@ -3,7 +3,8 @@ import { runAsUser } from "@/lib/auth/context";
 import { claimGuestAccount, createGuestUser } from "@/lib/auth/guest";
 import { findSession, findUser, listActiveUsers, upsertGoogleUser } from "@/lib/auth/users";
 import { createConversation, listConversations } from "@/lib/conversations";
-import { listRoutineBots } from "@/lib/bots/store";
+import { createBot, listRoutineBots } from "@/lib/bots/store";
+import { AgentError } from "@/lib/errors";
 import { queryRow, runStatement } from "@/lib/database";
 import { addTodo, listTodos } from "@/lib/todos";
 
@@ -53,5 +54,22 @@ describe("guest accounts", () => {
     expect((await runAsUser(owner, zone, () => listConversations())).map((item) => item.id)).toContain(chat.id);
     expect((await runAsUser(owner, zone, () => listTodos())).map((todo) => todo.title)).toContain("guest task");
     expect(await queryRow("SELECT id FROM users WHERE id = ?", [user.id])).toBeUndefined();
+  });
+
+  it("reports the Doombot limit as a safe, readable error", async () => {
+    const { user } = await createGuestUser();
+    const input = { name: "Limit bot", instructions: "x", toolNames: [], avatar: "robot", color: "green" } as unknown as Parameters<typeof createBot>[0];
+    let failure: unknown;
+    await runAsUser(user.id, zone, async () => {
+      for (let count = 0; count < 40; count++) {
+        try {
+          await createBot({ ...input, name: `Limit bot ${count}` });
+        } catch (error) {
+          failure = error;
+          return;
+        }
+      }
+    });
+    expect(failure).toBeInstanceOf(AgentError);
   });
 });

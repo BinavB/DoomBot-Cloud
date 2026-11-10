@@ -3,6 +3,7 @@ import { avatarOptions, builtInLooks, colorOptions, defaultLook, type BotLook } 
 import type { Frequency } from "@/lib/bots/frequency";
 import type { BotInput, BotRoutineInput } from "@/lib/bots/validate";
 import { queryRow, queryRows, runStatement } from "@/lib/database";
+import { AgentError } from "@/lib/errors";
 
 export type TaskSource = "chat" | "assigned" | "routine";
 
@@ -190,7 +191,7 @@ function slugify(name: string): string {
 export async function createBot(input: BotInput): Promise<Bot> {
   const existing = await listBots();
   if (existing.length >= maxBots) {
-    throw new Error(`You can have up to ${maxBots} Doombots. Delete one first.`);
+    throw new AgentError(`You can have up to ${maxBots} Doombots. Delete one first.`);
   }
   const taken = new Set(existing.map((bot) => bot.slug));
   const base = slugify(input.name);

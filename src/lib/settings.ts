@@ -49,6 +49,15 @@ export async function saveBriefingTopics(topics: TopicId[]): Promise<void> {
   );
 }
 
+export async function saveDetectedTimeZone(timeZone: string): Promise<boolean> {
+  const value = timeZone.trim();
+  if (!isValidTimeZone(value)) {
+    return false;
+  }
+  await runStatement("INSERT OR IGNORE INTO user_timezones (user_id, time_zone) VALUES (?, ?)", [currentUserId(), value]);
+  return true;
+}
+
 export async function getTimeZone(): Promise<string> {
   const row = await queryRow<{ time_zone: string }>("SELECT time_zone FROM user_timezones WHERE user_id = ?", [
     currentUserId(),

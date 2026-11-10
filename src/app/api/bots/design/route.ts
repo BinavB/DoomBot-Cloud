@@ -32,7 +32,7 @@ export const POST = withUser(async (request: Request) => {
       try {
         created.push(await createBot(draft));
       } catch (error) {
-        skipped.push(`${draft.name}: ${error instanceof Error ? error.message : "could not be created"}`);
+        skipped.push(`${draft.name}: ${error instanceof AgentError ? error.message : "could not be created"}`);
       }
     }
     return NextResponse.json({ bots: created, skipped }, { status: created.length > 0 ? 201 : 400 });
