@@ -1,6 +1,6 @@
 import { config, type AiProvider } from "@/lib/config";
 import { AgentError, ProviderHttpError } from "@/lib/errors";
-import { currentUserIsGuest } from "@/lib/auth/context";
+import { currentUserId, currentUserIsGuest } from "@/lib/auth/context";
 import { guestDailyTokenLimit, guestsDailyTokenBudget } from "@/lib/auth/guest-limits";
 import { isCoolingDown, markFailed } from "@/lib/provider-health";
 import { guestTokensUsedToday, recordUsage, tokensUsedToday } from "@/lib/usage";
@@ -246,6 +246,14 @@ async function requestWithRetry(
   }
 }
 
+function currentRequester(): string | undefined {
+  try {
+    return String(currentUserId());
+  } catch {
+    return undefined;
+  }
+}
+
 export async function createChatCompletion(
   messages: ChatMessage[],
   tools?: ToolSpec[],
@@ -268,8 +276,9 @@ export async function createChatCompletion(
     );
   }
 
+  const requester = currentRequester();
   const attempts = providers.flatMap((provider) => provider.models.map((model) => ({ provider, model })));
-  const healthy = attempts.filter(({ provider, model }) => !isCoolingDown(provider.name, model));
+  const healthy = attempts.filter(({ provider, model }) => !isCoolingDown(provider.name, model, requester));
   const failures: string[] = [];
   const skippedProviders = new Set<string>();
   for (const { provider, model } of healthy.length > 0 ? healthy : attempts) {
@@ -284,7 +293,7 @@ export async function createChatCompletion(
       }
       const status = error instanceof ProviderHttpError ? error.status : undefined;
       const reason = error instanceof Error ? error.message : String(error);
-      markFailed(provider.name, model, status);
+      markFailed(provider.name, model, status, requester);
       failures.push(`${provider.name}/${model}: ${reason.slice(0, 160)}`);
       if (status !== undefined && [401, 402, 403].includes(status)) {
         skippedProviders.add(provider.name);
