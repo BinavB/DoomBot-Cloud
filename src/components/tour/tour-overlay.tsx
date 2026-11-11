@@ -6,6 +6,7 @@ import { placeCard, type Box, type Size } from "@/lib/tour/placement";
 import type { TourStep } from "@/lib/tour/tours";
 import { findTargetBox } from "./find-target";
 import { GoogleAction } from "./google-action";
+import { InstallButton } from "@/components/install-button";
 import { LearnMoreButton } from "./learn-more-button";
 import { LearnMoreDialog } from "./learn-more-dialog";
 import { useEscape } from "./use-escape";
@@ -151,6 +152,7 @@ export function TourOverlay({ steps, guest, onDone, onSkipAll }: TourOverlayProp
           <p className="text-sm leading-relaxed text-muted">{step.body}</p>
           {feature && <LearnMoreButton label={feature.name} onClick={() => setLearning(feature.id)} />}
           {step.google && <GoogleAction guest={guest} />}
+          {step.install && <InstallButton variant="action" />}
           {last && (
             <label className="flex items-center gap-2 text-sm">
               <input

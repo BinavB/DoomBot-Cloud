@@ -9,6 +9,7 @@ import { useChatHistory } from "@/app/_components/chat/use-chat-history";
 import { useChatScroll } from "@/app/_components/chat/use-chat-scroll";
 import { createChat, dismissShareNotice, refreshChats, setChatBusy, setChatError, stopSharing, useChatState } from "@/components/chat-store";
 import { announceApprovalsChanged } from "@/components/events";
+import { Icon } from "@/components/icon";
 import { announceStatus, startStatus } from "@/components/status-store";
 import { readEvents } from "@/lib/chat-stream";
 import { speak, stopSpeaking } from "@/lib/speech";
@@ -19,7 +20,7 @@ export function ChatView() {
   const { selectedId, ready, busy, mode, error, shareNotice } = useChatState();
   const history = useChatHistory(selectedId, ready, busy);
   const attachments = useAttachments();
-  const { scrollRef, endRef, showJump, handleScroll, pinToBottom, jumpToLatest } = useChatScroll(history.lines);
+  const { scrollRef, endRef, showJump, handleScroll, pinToBottom, jumpToLatest } = useChatScroll(history.lines, busy);
   const think = mode === "think";
 
   const [draft, setDraft] = useState("");
@@ -264,13 +265,19 @@ export function ChatView() {
           actions={actions}
           endRef={endRef}
         />
+        {showJump && (
+          <div className="pointer-events-none sticky bottom-0 z-10 h-0">
+            <button
+              type="button"
+              onClick={jumpToLatest}
+              aria-label="Jump to latest"
+              className="pointer-events-auto absolute bottom-3 right-4 flex h-10 w-10 items-center justify-center rounded-full border border-line bg-panel text-ink shadow-lg hover:bg-raised"
+            >
+              <Icon name="arrow_downward" size={22} />
+            </button>
+          </div>
+        )}
       </div>
-
-      {showJump && (
-        <button type="button" onClick={jumpToLatest} className="absolute bottom-24 left-1/2 -translate-x-1/2 rounded-full border border-line bg-panel px-4 py-2 text-sm shadow-lg md:bottom-28">
-          Jump to latest
-        </button>
-      )}
 
       <ChatComposer
         draft={draft}

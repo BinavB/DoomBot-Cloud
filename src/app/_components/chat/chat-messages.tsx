@@ -127,7 +127,7 @@ function AssistantMessage({ line, index, copied, sending, actions }: {
     </button>
   );
   return (
-    <div className="group flex gap-3">
+    <div data-assistant className="group flex gap-3">
       <DoomMark size={28} />
       <div className="min-w-0 flex-1 pt-0.5">
         {line.content.length > 0 && <Markdown text={line.content} />}

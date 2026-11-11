@@ -26,7 +26,7 @@ interface RoutineFormProps {
 }
 
 const fieldClass =
-  "h-11 rounded-xl border border-line bg-canvas px-3 outline-none focus:border-doom";
+  "h-11 w-full min-w-0 rounded-xl border border-line bg-canvas px-3 outline-none focus:border-doom";
 
 export function RoutineForm({
   bot,
@@ -144,7 +144,7 @@ export function RoutineForm({
           </span>
         )}
       </div>
-      <div className="flex flex-col gap-3 sm:flex-row">
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(11rem,1fr))] gap-3">
         <label className="flex flex-col gap-2 text-sm">
           How often
           <select
@@ -204,14 +204,14 @@ export function RoutineForm({
             className={fieldClass}
           />
         </label>
-        <label className="flex flex-1 flex-col gap-2 text-sm">
+        <label className="col-span-full flex flex-col gap-2 text-sm">
           What to do
           <input
             value={instruction}
             onChange={(event) => setInstruction(event.target.value)}
             maxLength={1000}
             placeholder="Check my calendar and list today's events"
-            className="h-11 rounded-xl border border-line bg-canvas px-4 outline-none focus:border-doom"
+            className="h-11 w-full min-w-0 rounded-xl border border-line bg-canvas px-4 outline-none focus:border-doom"
           />
         </label>
       </div>

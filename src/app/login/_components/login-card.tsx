@@ -1,7 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import { useSyncExternalStore } from "react";
 import { DoomMark } from "@/components/doom-mark";
+import { GoogleLogo } from "@/components/google-logo";
 import { Icon } from "@/components/icon";
 
 function subscribeToLocation(onChange: () => void): () => void {
@@ -21,6 +23,12 @@ const errorMessages: Record<string, string> = {
   "guests-full": "Too many guests joined in the last hour. Sign in with Google, or try again later.",
   "guest-google": "Sign in with Google first. Then you can connect Gmail and Calendar.",
 };
+
+const trustPoints = [
+  { icon: "lock", text: "Your chats stay private to your account" },
+  { icon: "visibility", text: "Google access is read-only, and only if you connect it" },
+  { icon: "block", text: "No ads, and your data is never sold" },
+];
 
 export function LoginCard() {
   const error = useSyncExternalStore(subscribeToLocation, readError, () => null);
@@ -42,19 +50,39 @@ export function LoginCard() {
       )}
       <a
         href="/api/auth/google/start"
-        className="flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-doom px-4 text-sm font-semibold text-canvas"
+        className="flex h-11 w-full items-center justify-center gap-3 rounded-xl border border-white/10 bg-white px-4 text-sm font-semibold text-[#1f1f1f] transition-colors hover:bg-[#f1f3f4]"
       >
-        <Icon name="login" size={18} />
+        <GoogleLogo />
         Continue with Google
       </a>
       <form method="post" action="/api/auth/guest" className="flex w-full flex-col items-center gap-2">
-        <button type="submit" className="h-11 w-full rounded-xl border border-line px-4 text-sm font-medium hover:bg-raised">
+        <button type="submit" className="flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-line px-4 text-sm font-medium hover:bg-raised">
+          <Icon name="person" size={18} />
           Skip sign-in, try as a guest
         </button>
         <p className="text-xs leading-relaxed text-muted">
           Guests get a few messages a day. Connect Google later for the proactive features and to keep your chats.
         </p>
       </form>
+      <ul className="flex w-full flex-col gap-2 border-t border-line pt-5 text-left text-xs text-muted">
+        {trustPoints.map((point) => (
+          <li key={point.text} className="flex items-center gap-2.5">
+            <Icon name={point.icon} size={16} className="text-doom" />
+            {point.text}
+          </li>
+        ))}
+      </ul>
+      <p className="text-xs leading-relaxed text-muted">
+        By continuing you agree to the{" "}
+        <Link href="/terms" className="underline underline-offset-2 hover:text-ink">
+          Terms
+        </Link>{" "}
+        and{" "}
+        <Link href="/privacy" className="underline underline-offset-2 hover:text-ink">
+          Privacy Policy
+        </Link>
+        .
+      </p>
     </section>
   );
 }

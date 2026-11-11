@@ -7,6 +7,7 @@ export interface TourStep {
   body: string;
   feature?: FeatureId;
   google?: boolean;
+  install?: boolean;
 }
 
 export type TourKey = "chat" | "bots" | "alerts" | "briefing" | "todos" | "approvals" | "connections" | "settings";
@@ -52,6 +53,13 @@ export const tours: Record<TourKey, TourStep[]> = {
       targets: ["composer-attach"],
       title: "Show, don't just tell",
       body: "Add a picture or a PDF and ask about it. Tap the mic to talk instead.",
+    },
+    {
+      id: "install",
+      targets: ["install-app"],
+      title: "Install it like a real app",
+      body: "Add DOOMBOT to your home screen or app drawer so it opens full screen, like any other app. On iPhone, tap Share, then Add to Home Screen.",
+      install: true,
     },
     {
       id: "approvals",

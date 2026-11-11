@@ -24,6 +24,14 @@ describe("tour steps", () => {
   });
 });
 
+describe("install step", () => {
+  it("shows the install button on the chat tour", () => {
+    const step = tours.chat.find((item) => item.id === "install");
+    expect(step?.install).toBe(true);
+    expect(step?.targets).toContain("install-app");
+  });
+});
+
 describe("placeCard", () => {
   it("centres the card when there is no target", () => {
     expect(placeCard(null, 200, desktop)).toEqual({ top: 300, left: 460, width: 360 });

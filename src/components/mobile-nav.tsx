@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { DoomMark } from "@/components/doom-mark";
 import { Icon } from "@/components/icon";
+import { InstallButton } from "@/components/install-button";
 import { SidebarChats } from "@/components/sidebar-chats";
 import { SidebarPages } from "@/components/sidebar-pages";
 import type { NavData } from "@/components/use-nav-data";
@@ -57,6 +58,7 @@ export function MobileNav({ title, actions, pendingCount, unreadCount, account }
           <h1 className="pointer-events-none absolute inset-x-28 truncate text-center font-display text-base font-semibold">{title}</h1>
           <div className="flex-1" />
           {actions}
+          <InstallButton variant="icon" />
           <Link href="/alerts" aria-label={unreadCount > 0 ? `Alerts, ${unreadCount} unread` : "Alerts"} className={iconButton}>
             <Icon name="notifications" size={22} />
             {unreadCount > 0 && <span aria-hidden className="absolute top-2.5 right-2.5 h-2 w-2 rounded-full bg-danger" />}
