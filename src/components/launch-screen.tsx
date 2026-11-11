@@ -32,13 +32,13 @@ export function LaunchScreen() {
             <path d="M60 8L104 33V87L60 112L16 87V33Z" fill="#aab4b0" />
             <path d="M60 20L93 39V81L60 100L27 81V39Z" fill="#141b17" />
           </g>
-          <g className="launch-core">
-            <circle cx="60" cy="60" r="26" fill="#0d1210" stroke="#3f9e68" strokeWidth="3" />
+          <circle cx="60" cy="60" r="26" fill="#0d1210" stroke="#3f9e68" strokeWidth="3" />
+          <g className="launch-eye">
             <circle cx="60" cy="60" r="11" fill="#3f9e68" />
             <circle cx="60" cy="60" r="4" fill="#0d1210" />
           </g>
-          <circle cx="60" cy="14" r="3" fill="#cfa84d" />
-          <circle cx="60" cy="106" r="3" fill="#cfa84d" />
+          <circle cx="60" cy="14" r="3" fill="#6fd29a" />
+          <circle cx="60" cy="106" r="3" fill="#6fd29a" />
         </svg>
         <p className="launch-title">DOOMBOT</p>
         <p className="launch-subtitle">Personal AI agent</p>
