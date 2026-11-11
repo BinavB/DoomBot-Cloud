@@ -149,7 +149,6 @@ export interface AgentRun {
 export async function runAgent(userText: string, run: AgentRun): Promise<AgentReply> {
   const { conversationId, signal, onToken, image, document, think } = run;
   await saveMessage(conversationId, "user", userText);
-  await touchConversation(conversationId, userText);
   const completionOptions: CompletionOptions = { signal, onToken, reasoningEffort: think ? "high" : undefined };
   const attachmentNotes = [
     image ? "(The user attached an image to this message.)" : "",
@@ -158,10 +157,17 @@ export async function runAgent(userText: string, run: AgentRun): Promise<AgentRe
       : "",
   ].filter((note) => note.length > 0);
 
-  const availableTools = [...toolSpecs(), ...(await delegationSpecs())];
+  const [, delegated, instructions, memories, history] = await Promise.all([
+    touchConversation(conversationId, userText),
+    delegationSpecs(),
+    getCustomInstructions(),
+    listUserMemories(),
+    loadMessages(conversationId, historyLimit),
+  ]);
+  const availableTools = [...toolSpecs(), ...delegated];
   const conversation: ChatMessage[] = [
-    { role: "system", content: systemPrompt(await getCustomInstructions(), (await listUserMemories()).map((item) => item.fact)) },
-    ...withinBudget(await loadMessages(conversationId, historyLimit)).map((message): ChatMessage =>
+    { role: "system", content: systemPrompt(instructions, memories.map((item) => item.fact)) },
+    ...withinBudget(history).map((message): ChatMessage =>
       message.role === "user"
         ? { role: "user", content: message.content }
         : { role: "assistant", content: message.content },
@@ -199,13 +205,10 @@ export async function runAgent(userText: string, run: AgentRun): Promise<AgentRe
       content: completion.content,
       tool_calls: completion.toolCalls,
     });
-    for (const call of completion.toolCalls) {
-      conversation.push({
-        role: "tool",
-        tool_call_id: call.id,
-        content: await executeToolCall(call, approvalsCreated),
-      });
-    }
+    const results = await Promise.all(completion.toolCalls.map((call) => executeToolCall(call, approvalsCreated)));
+    completion.toolCalls.forEach((call, index) => {
+      conversation.push({ role: "tool", tool_call_id: call.id, content: results[index] });
+    });
   }
 
   const reply = "This request needed too many steps. Try a smaller request.";

@@ -5,6 +5,7 @@ import { useEffect, useSyncExternalStore } from "react";
 import { Icon } from "@/components/icon";
 import { messagesFor } from "@/components/status-actions";
 import { dismissStatus, readStatus, startStatus, subscribeStatus } from "@/components/status-store";
+import { ThinkingIndicator } from "@/components/thinking-indicator";
 
 const globalForStatus = globalThis as unknown as { doombotFetchWatched?: boolean };
 
@@ -42,16 +43,6 @@ function watchRequests(): void {
   };
 }
 
-function Dots() {
-  return (
-    <span aria-hidden className="flex shrink-0 items-center gap-1">
-      <span className="typing-dot h-1.5 w-1.5 rounded-full bg-doom" />
-      <span className="typing-dot h-1.5 w-1.5 rounded-full bg-doom" />
-      <span className="typing-dot h-1.5 w-1.5 rounded-full bg-doom" />
-    </span>
-  );
-}
-
 export function StatusPill({ floating = false }: { floating?: boolean }) {
   const pathname = usePathname();
   const status = useSyncExternalStore(subscribeStatus, readStatus, () => null);
@@ -71,10 +62,15 @@ export function StatusPill({ floating = false }: { floating?: boolean }) {
         status.tone === "error" ? "border-danger/60" : "border-line"
       }`}
     >
-      {status.tone === "working" && <Dots />}
-      {status.tone === "done" && <Icon name="check" size={18} className="text-doom" />}
-      {status.tone === "error" && <Icon name="error" size={18} className="text-danger" />}
-      <span className="min-w-0 truncate whitespace-nowrap">{status.label}</span>
+      {status.tone === "working" ? (
+        <ThinkingIndicator label={status.label} />
+      ) : (
+        <>
+          {status.tone === "done" && <Icon name="check" size={18} className="text-doom" />}
+          {status.tone === "error" && <Icon name="error" size={18} className="text-danger" />}
+          <span className="min-w-0 truncate whitespace-nowrap">{status.label}</span>
+        </>
+      )}
       {status.tone === "error" && (
         <button type="button" onClick={dismissStatus} aria-label="Dismiss" className="-mr-1.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-muted hover:text-ink">
           <Icon name="close" size={16} />

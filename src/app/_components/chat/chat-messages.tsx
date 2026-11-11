@@ -8,6 +8,7 @@ import { DoomMark } from "@/components/doom-mark";
 import { Icon } from "@/components/icon";
 import type { ShareNotice } from "@/components/chat-store";
 import { Markdown } from "@/components/markdown";
+import { ThinkingIndicator } from "@/components/thinking-indicator";
 import { canSpeak } from "@/lib/speech";
 
 export interface MessageActions {
@@ -168,6 +169,15 @@ export function ChatMessages({ lines, empty, sending, editingId, editDraft, onEd
         ) : (
           <AssistantMessage key={line.id} line={line} index={index} copied={copiedId === line.id} sending={sending} actions={actions} />
         ),
+      )}
+
+      {sending && (lines.length === 0 || lines[lines.length - 1].role === "user") && (
+        <div data-assistant className="flex gap-3">
+          <DoomMark size={28} />
+          <div className="min-w-0 flex-1 pt-1">
+            <ThinkingIndicator />
+          </div>
+        </div>
       )}
 
       {shareNotice && (

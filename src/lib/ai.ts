@@ -161,6 +161,16 @@ async function readStream(
   return { content: state.content, toolCalls };
 }
 
+function reasoningFields(provider: AiProvider, model: string, options: CompletionOptions): { reasoning_effort?: string } {
+  if (provider.name === "gemini" && options.reasoningEffort) {
+    return { reasoning_effort: options.reasoningEffort };
+  }
+  if (provider.name === "groq" && model.startsWith("openai/gpt-oss")) {
+    return { reasoning_effort: options.reasoningEffort ?? "low" };
+  }
+  return {};
+}
+
 async function requestCompletion(
   provider: AiProvider,
   model: string,
@@ -180,7 +190,7 @@ async function requestCompletion(
       messages,
       ...(tools && tools.length > 0 ? { tools } : {}),
       stream: streaming,
-      ...(provider.name === "gemini" && options.reasoningEffort ? { reasoning_effort: options.reasoningEffort } : {}),
+      ...reasoningFields(provider, model, options),
     }),
     signal: requestSignal(options.signal),
   });
