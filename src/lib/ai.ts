@@ -55,7 +55,7 @@ function delay(milliseconds: number): Promise<void> {
 }
 
 function requestSignal(external?: AbortSignal): AbortSignal {
-  const timeout = AbortSignal.timeout(90000);
+  const timeout = AbortSignal.timeout(30000);
   return external ? AbortSignal.any([timeout, external]) : timeout;
 }
 

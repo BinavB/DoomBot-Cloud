@@ -34,7 +34,7 @@ services:
       - key: OPENROUTER_API_KEY
         sync: false
       - key: AI_PROVIDERS
-        value: gemini,groq,mistral,openrouter,deepseek
+        value: groq,gemini,mistral,openrouter,deepseek
       - key: APP_TIMEZONE
         value: Asia/Dubai
       - key: BRIEFING_TIME

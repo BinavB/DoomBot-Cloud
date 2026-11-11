@@ -6,6 +6,7 @@ import type { ToolSpec } from "@/lib/ai";
 import { fetchWeatherLine } from "@/lib/briefing/weather";
 import { AgentError } from "@/lib/errors";
 import { openGoogleTasks, todaysCalendarEvents, unreadEmails } from "@/lib/google/client";
+import { formatWebResults, searchWeb } from "@/lib/search/tavily";
 import { addTodo, deleteTodo, listTodos, maxTodoTitleLength, updateTodo } from "@/lib/todos";
 import { describeNow } from "@/lib/time";
 
@@ -19,6 +20,14 @@ export interface AgentTool {
   chiefOnly?: boolean;
   summarize: (args: ToolArguments) => string | Promise<string>;
   run: (args: ToolArguments) => Promise<string>;
+}
+
+function readSearchQuery(args: ToolArguments): string {
+  const query = typeof args.query === "string" ? args.query.trim() : "";
+  if (!query) {
+    throw new AgentError('"query" must say what to search for.');
+  }
+  return query;
 }
 
 function readTodoId(args: ToolArguments): number {
@@ -71,6 +80,18 @@ const tools: AgentTool[] = [
     requiresApproval: false,
     summarize: () => "Read the weather",
     run: fetchWeatherLine,
+  },
+  {
+    name: "web_search",
+    description: "Search the web for current information such as news, prices, scores or facts that may have changed. Returns titles, links and short snippets.",
+    parameters: {
+      type: "object",
+      properties: { query: { type: "string", description: "What to search for." } },
+      required: ["query"],
+    },
+    requiresApproval: false,
+    summarize: (args) => `Search the web for "${readSearchQuery(args)}"`,
+    run: async (args) => formatWebResults(await searchWeb(readSearchQuery(args))),
   },
   {
     name: "list_todos",

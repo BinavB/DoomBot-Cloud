@@ -53,8 +53,8 @@ With the default `TURSO_DATABASE_URL=file:data/agent.db`, data is kept in a loca
 
 | Setting | What it is |
 | --- | --- |
-| `GEMINI_API_KEY` | Main AI provider. The free tier works, but has daily limits |
-| `GROQ_API_KEY`, `MISTRAL_API_KEY`, `OPENROUTER_API_KEY`, `DEEPSEEK_API_KEY` | Optional backups, used in this order when Gemini runs out. Groq, Mistral and OpenRouter have free plans |
+| `GROQ_API_KEY` | Main AI provider, running `openai/gpt-oss-120b` for fast replies. Has a free plan |
+| `GEMINI_API_KEY`, `MISTRAL_API_KEY`, `OPENROUTER_API_KEY`, `DEEPSEEK_API_KEY` | Backups, used in this order when Groq fails. Gemini, Mistral and OpenRouter have free plans |
 | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | Google OAuth client, used for sign-in and for Calendar, Gmail and Tasks |
 | `AUTH_SECRET` | Random text of at least 32 characters that signs login cookies. Make one with `openssl rand -hex 32` |
 | `APP_URL` | The public address of the app, with no trailing slash |

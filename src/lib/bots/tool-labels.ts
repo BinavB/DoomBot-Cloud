@@ -6,6 +6,7 @@ interface ToolText {
 const toolText: Record<string, ToolText> = {
   get_current_time: { label: "Current date and time", help: "Knows today's date and the time where you are." },
   get_weather: { label: "Weather", help: "Checks today's weather and forecast for your home city." },
+  web_search: { label: "Web search", help: "Looks up current news, prices, scores and facts on the web." },
   list_todos: { label: "Read your to-dos", help: "Looks at your to-do list and what is done." },
   add_todo: { label: "Add to-dos", help: "Adds new tasks to your to-do list." },
   update_todo: { label: "Edit to-dos", help: "Renames tasks and ticks them off or reopens them." },

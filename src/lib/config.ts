@@ -50,7 +50,7 @@ const providerCatalog: Record<string, () => AiProvider> = {
     baseUrl: readText("GROQ_BASE_URL", "https://api.groq.com/openai/v1"),
     models: [
       ...new Set([
-        readText("GROQ_MODEL", "llama-3.3-70b-versatile"),
+        readText("GROQ_MODEL", "openai/gpt-oss-120b"),
         ...readList("GROQ_FALLBACK_MODELS", "llama-3.1-8b-instant"),
       ]),
     ],
@@ -76,7 +76,7 @@ const providerCatalog: Record<string, () => AiProvider> = {
 };
 
 function readProviders(): AiProvider[] {
-  return readText("AI_PROVIDERS", "gemini,groq,mistral,openrouter,deepseek")
+  return readText("AI_PROVIDERS", "groq,gemini,mistral,openrouter,deepseek")
     .split(",")
     .map((name) => name.trim().toLowerCase())
     .filter((name) => name in providerCatalog)
