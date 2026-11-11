@@ -33,7 +33,7 @@ export function InstallButton({ variant = "header" }: { variant?: InstallVariant
         aria-label="Install app"
         className={variantClasses[variant]}
       >
-        <Icon name="install_mobile" size={variant === "icon" ? 22 : 18} className={variant === "action" ? "text-doom" : undefined} />
+        <Icon name="download" bold size={variant === "icon" ? 22 : 18} className={variant === "action" ? "text-doom" : undefined} />
         {variant !== "icon" && "Install app"}
       </button>
       {variant === "action" && ios && <p className="text-xs text-muted">On iPhone, tap Share, then Add to Home Screen.</p>}

@@ -59,7 +59,7 @@ export function UserMenu({ account, pendingCount, unreadCount, showPages = true 
   const items: MenuItem[] = [
     ...(showPages ? pageLinks(pendingCount, unreadCount) : []),
     { label: "Settings", icon: "tune", href: "/settings", separatorBefore: showPages },
-    ...(installed ? [] : [{ label: "Install app", hint: "Add DOOMBOT as a shortcut", icon: "install_mobile", onSelect: () => void installApp() }]),
+    ...(installed ? [] : [{ label: "Install app", hint: "Add DOOMBOT as a shortcut", icon: "download", onSelect: () => void installApp() }]),
     { label: "Replay tour", icon: "school", onSelect: replayTours },
     ...(account.guest
       ? [{ label: "Sign in with Google", hint: "Keep your chats and turn on Google features", icon: "login", separatorBefore: true, onSelect: () => window.location.assign(new URL("/api/auth/google/start", window.location.origin)) }]

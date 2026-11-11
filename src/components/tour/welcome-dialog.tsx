@@ -102,7 +102,7 @@ export function WelcomeDialog({ guest, onChoose }: WelcomeDialogProps) {
               className="doom-rise mx-6 mt-4 flex flex-col gap-3 border-l-2 border-doom bg-raised/60 px-5 py-4 sm:mx-10 sm:flex-row sm:items-center"
               style={{ animationDelay: `${featureDelayMilliseconds + welcomeFeatures.length * featureStaggerMilliseconds}ms` }}
             >
-              <FeatureBadge icon="install_mobile" size={40} />
+              <FeatureBadge icon="download" size={40} />
               <div className="flex min-w-0 flex-1 flex-col gap-1">
                 <p className="text-sm font-semibold">Install DOOMBOT as an app</p>
                 <p className="text-sm text-muted">Add it to your home screen or app drawer so it opens full screen, with no browser bar.</p>

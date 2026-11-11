@@ -206,7 +206,7 @@ export function SettingsView() {
             onClick={() => void installApp()}
             className="flex h-10 w-fit items-center gap-2 rounded-xl border border-line px-4 text-sm font-medium hover:bg-raised"
           >
-            <Icon name="install_mobile" size={18} />
+            <Icon name="download" bold size={18} />
             Install app
           </button>
         )}
