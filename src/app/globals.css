@@ -346,13 +346,11 @@ body {
   position: fixed;
   inset: 0;
   z-index: 100;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 1.4rem;
-  background: radial-gradient(circle at 50% 42%, #1b3326 0%, #0d1210 68%);
-  transition: opacity 0.6s ease, visibility 0.6s ease;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: radial-gradient(120% 90% at 50% 38%, #1b3326 0%, #111a15 48%, #0d1210 100%);
+  transition: opacity 0.45s ease, visibility 0.45s ease;
 }
 
 .launch-screen-leaving {
@@ -360,38 +358,90 @@ body {
   visibility: hidden;
 }
 
+.launch-nebula {
+  position: absolute;
+  inset: -20%;
+  pointer-events: none;
+  background:
+    radial-gradient(34% 40% at 20% 28%, rgba(63, 158, 104, 0.34), transparent 62%),
+    radial-gradient(32% 38% at 80% 24%, rgba(207, 168, 77, 0.2), transparent 62%),
+    radial-gradient(40% 46% at 68% 80%, rgba(63, 158, 104, 0.26), transparent 64%);
+  filter: blur(60px);
+  animation: launch-drift 6s ease-in-out infinite alternate;
+}
+
+.launch-stars {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    radial-gradient(1.2px 1.2px at 12% 18%, #fff, transparent),
+    radial-gradient(1px 1px at 78% 12%, #fff, transparent),
+    radial-gradient(1.4px 1.4px at 30% 72%, #fff, transparent),
+    radial-gradient(1px 1px at 86% 64%, #cfe9d8, transparent),
+    radial-gradient(1.2px 1.2px at 52% 40%, #fff, transparent),
+    radial-gradient(1px 1px at 6% 88%, #f1e2b3, transparent);
+  animation: launch-twinkle 3s ease-in-out infinite;
+}
+
+.launch-core-stack {
+  position: relative;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 1.5rem;
+  animation: launch-rise 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
 .launch-emblem {
-  width: 124px;
-  height: 124px;
-  animation: launch-rise 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  width: 132px;
+  height: 132px;
+  filter: drop-shadow(0 0 28px rgba(63, 158, 104, 0.55));
 }
 
 .launch-hex {
   transform-origin: 60px 60px;
-  animation: launch-spin 14s linear infinite;
+  animation: launch-spin 9s linear infinite;
 }
 
 .launch-core {
   transform-origin: 60px 60px;
-  animation: launch-pulse 1.6s ease-in-out infinite;
+  animation: launch-pulse 1.2s ease-in-out infinite;
 }
 
 .launch-title {
-  margin: 0;
-  padding-left: 0.32em;
+  margin: 1.1rem 0 0;
+  padding-left: 0.2em;
   font-family: var(--font-sora), system-ui, sans-serif;
-  font-weight: 600;
-  font-size: 1.5rem;
-  letter-spacing: 0.32em;
-  color: var(--ink);
-  animation: launch-fade 0.9s 0.25s both;
+  font-weight: 700;
+  font-size: clamp(1.8rem, 8vw, 2.7rem);
+  letter-spacing: 0.2em;
+  white-space: nowrap;
+  background: linear-gradient(100deg, var(--doom), var(--signal) 50%, var(--doom));
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: launch-shimmer 4s linear infinite;
+}
+
+.launch-subtitle {
+  margin: 0.5rem 0 0;
+  font-size: 0.7rem;
+  letter-spacing: 0.4em;
+  padding-left: 0.4em;
+  text-transform: uppercase;
+  color: var(--muted);
 }
 
 .launch-bar {
-  width: 160px;
-  height: 2px;
-  border-radius: 2px;
-  background: var(--line);
+  width: min(220px, 60vw);
+  height: 3px;
+  margin-top: 2rem;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.08);
   overflow: hidden;
 }
 
@@ -399,15 +449,15 @@ body {
   display: block;
   width: 100%;
   height: 100%;
-  background: var(--doom);
+  background: linear-gradient(90deg, var(--doom), var(--signal));
   transform-origin: left;
-  animation: launch-load 1.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  animation: launch-load 0.9s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
 @keyframes launch-rise {
   from {
     opacity: 0;
-    transform: scale(0.7) rotate(-20deg);
+    transform: scale(0.82) translateY(10px);
   }
   to {
     opacity: 1;
@@ -424,23 +474,18 @@ body {
 @keyframes launch-pulse {
   0%,
   100% {
-    transform: scale(0.85);
-    opacity: 0.8;
+    transform: scale(0.88);
+    opacity: 0.85;
   }
   50% {
-    transform: scale(1.08);
+    transform: scale(1.1);
     opacity: 1;
   }
 }
 
-@keyframes launch-fade {
-  from {
-    opacity: 0;
-    transform: translateY(6px);
-  }
+@keyframes launch-shimmer {
   to {
-    opacity: 1;
-    transform: none;
+    background-position: 200% center;
   }
 }
 
@@ -453,9 +498,29 @@ body {
   }
 }
 
+@keyframes launch-drift {
+  from {
+    transform: translate3d(-3%, -2%, 0) scale(1);
+  }
+  to {
+    transform: translate3d(4%, 3%, 0) scale(1.12);
+  }
+}
+
+@keyframes launch-twinkle {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .launch-screen *,
   .launch-screen {
-    animation: none !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
   }
 }
