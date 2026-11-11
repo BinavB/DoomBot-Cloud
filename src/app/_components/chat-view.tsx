@@ -146,7 +146,9 @@ export function ChatView() {
       setChatBusy(false);
       await history.reload(chatId).catch(() => undefined);
       await refreshChats().catch(() => undefined);
-      composerRef.current?.focus();
+      if (!window.matchMedia("(pointer: coarse)").matches) {
+        composerRef.current?.focus();
+      }
     }
   }
 

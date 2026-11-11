@@ -1,10 +1,11 @@
 "use client";
 
 import Image from "next/image";
-import { useRef, type FormEvent, type KeyboardEvent, type RefObject } from "react";
+import { useRef, useSyncExternalStore, type FormEvent, type KeyboardEvent, type RefObject } from "react";
 import type { AttachmentsApi } from "@/app/_components/chat/use-attachments";
 import { VoiceInput } from "@/app/_components/voice-input";
 import { Icon } from "@/components/icon";
+import { isSpeaking, stopSpeaking, subscribeSpeaking } from "@/lib/speech";
 
 interface ChatComposerProps {
   draft: string;
@@ -21,9 +22,10 @@ interface ChatComposerProps {
 export function ChatComposer({ draft, onDraft, composerRef, busy, attachments, onSubmit, onKeyDown, onStop, onTranscript }: ChatComposerProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const hasAttachment = attachments.image !== null || attachments.pdf !== null;
+  const speaking = useSyncExternalStore(subscribeSpeaking, isSpeaking, () => false);
 
   return (
-    <div className="shrink-0 bg-canvas px-3 pt-2 pb-[max(0.75rem,env(safe-area-inset-bottom))] md:px-6 md:pt-3 md:pb-4">
+    <div className="composer-bar shrink-0 bg-canvas px-3 pt-2 pb-[max(0.75rem,env(safe-area-inset-bottom))] md:px-6 md:pt-3 md:pb-4">
       {(hasAttachment || attachments.error) && (
         <div className="mx-auto mb-2 flex w-full max-w-3xl items-center gap-3 text-sm">
           {attachments.image && (
@@ -78,7 +80,13 @@ export function ChatComposer({ draft, onDraft, composerRef, busy, attachments, o
             <button type="button" data-tour="composer-attach" onClick={() => fileInputRef.current?.click()} aria-label="Attach an image or PDF" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-muted hover:bg-raised hover:text-ink">
               <Icon name="add_photo_alternate" size={22} />
             </button>
-            <VoiceInput onTranscript={onTranscript} />
+            {speaking ? (
+              <button type="button" onClick={stopSpeaking} aria-label="Stop reading aloud" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-doom text-canvas">
+                <Icon name="stop" size={20} />
+              </button>
+            ) : (
+              <VoiceInput onTranscript={onTranscript} />
+            )}
           </>
         )}
         {busy ? (

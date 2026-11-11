@@ -17,7 +17,7 @@ export function AppShell({ title, children, bare = false, actions, mobileActions
     return <main className="flex min-h-dvh items-center justify-center px-4 py-10">{children}</main>;
   }
   return (
-    <div className="fixed inset-0 flex flex-col overflow-hidden md:flex-row">
+    <div className="fixed inset-x-0 top-[var(--app-top,0px)] flex h-[var(--app-height,100dvh)] flex-col overflow-hidden md:flex-row">
       <SidebarNav title={title} actions={mobileActions} />
       <div className="flex min-h-0 min-w-0 flex-1 flex-col">
         <header className="hidden h-14 shrink-0 items-center justify-between gap-4 border-b border-line px-8 md:flex">

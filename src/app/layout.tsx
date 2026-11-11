@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Figtree, Sora } from "next/font/google";
 import "material-symbols/sharp.css";
 import { LaunchScreen } from "@/components/launch-screen";
+import { ViewportHeight } from "@/components/viewport-height";
 import { launchImages } from "@/lib/launch-images";
 import "./globals.css";
 
@@ -25,6 +26,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
+  interactiveWidget: "resizes-content",
   themeColor: "#0d1210",
 };
 
@@ -33,6 +35,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html lang="en" className={`${figtree.variable} ${sora.variable} h-full antialiased`}>
       <body className="h-full">
         <LaunchScreen />
+        <ViewportHeight />
         {children}
       </body>
     </html>
