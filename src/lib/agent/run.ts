@@ -1,4 +1,5 @@
 import { createChatCompletion, type ChatMessage, type CompletionOptions, type ToolCall } from "@/lib/ai";
+import { autoTitleConversation } from "@/lib/auto-title";
 import { touchConversation } from "@/lib/conversations";
 import { getCustomInstructions, listUserMemories } from "@/lib/settings";
 import { createApproval } from "@/lib/agent/approvals";
@@ -197,6 +198,7 @@ export async function runAgent(userText: string, run: AgentRun): Promise<AgentRe
     if (completion.toolCalls.length === 0) {
       const reply = completion.content?.trim() || "I could not produce a reply.";
       await saveMessage(conversationId, "assistant", reply);
+      void autoTitleConversation(conversationId);
       return { reply, approvalsCreated };
     }
 

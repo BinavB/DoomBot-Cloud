@@ -120,7 +120,11 @@ export async function createChat(): Promise<string | null> {
     return null;
   }
   rememberChat(data.conversation.id);
-  set({ conversations: [data.conversation, ...state.conversations], selectedId: data.conversation.id, error: null });
+  set({
+    conversations: [data.conversation, ...state.conversations.filter((item) => item.id !== data.conversation?.id)],
+    selectedId: data.conversation.id,
+    error: null,
+  });
   return data.conversation.id;
 }
 

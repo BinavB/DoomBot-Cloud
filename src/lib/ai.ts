@@ -45,7 +45,7 @@ interface CompletionResponse {
   choices: {
     message: { content: string | null; tool_calls?: ToolCall[] };
   }[];
-  usage?: { prompt_tokens: number; completion_tokens: number };
+  usage?: { prompt_tokens?: number; completion_tokens?: number };
 }
 
 export const busyMessage = "DOOMBOT is very busy right now. Please try again in a minute.";
@@ -222,13 +222,11 @@ async function requestCompletion(
     throw new AgentError("returned an empty response");
   }
 
-  if (body.usage) {
-    await recordUsage(
-      `${provider.name}/${model}`,
-      body.usage.prompt_tokens,
-      body.usage.completion_tokens,
-    );
-  }
+  await recordUsage(
+    `${provider.name}/${model}`,
+    body.usage?.prompt_tokens ?? estimatePromptTokens(messages),
+    body.usage?.completion_tokens ?? estimateTokens(message.content ?? ""),
+  );
 
   return {
     content: message.content,

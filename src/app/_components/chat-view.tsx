@@ -15,6 +15,7 @@ import { readEvents } from "@/lib/chat-stream";
 import { speak, stopSpeaking } from "@/lib/speech";
 
 const composerMaxHeight = 200;
+const titleRefreshDelayMilliseconds = 3500;
 
 export function ChatView() {
   const { selectedId, ready, busy, mode, error, shareNotice } = useChatState();
@@ -146,6 +147,7 @@ export function ChatView() {
       setChatBusy(false);
       await history.reload(chatId).catch(() => undefined);
       await refreshChats().catch(() => undefined);
+      window.setTimeout(() => void refreshChats().catch(() => undefined), titleRefreshDelayMilliseconds);
       if (!window.matchMedia("(pointer: coarse)").matches) {
         composerRef.current?.focus();
       }

@@ -237,6 +237,9 @@ async function openDatabase(): Promise<Client> {
     authToken: config.databaseToken || undefined,
   });
   await client.executeMultiple(schema);
+  await client
+    .execute("ALTER TABLE conversations ADD COLUMN title_locked INTEGER NOT NULL DEFAULT 0")
+    .catch(() => undefined);
   await client.execute(
     "UPDATE bot_tasks SET status = 'failed', result = 'Interrupted by a server restart.', finished_at = datetime('now') WHERE status = 'running'",
   );
