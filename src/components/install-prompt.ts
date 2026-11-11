@@ -1,17 +1,36 @@
 "use client";
 
-import { announceStatus } from "@/components/status-store";
+import { announceStatus, startStatus, type StatusHandle } from "@/components/status-store";
 
 interface InstallEvent extends Event {
   prompt: () => Promise<void>;
   userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
 }
 
+const installTimeoutMilliseconds = 20000;
+
 let deferred: InstallEvent | null = null;
+let installing: StatusHandle | null = null;
+let installedEventSeen = false;
+let installTimer: ReturnType<typeof setTimeout> | null = null;
 const listeners = new Set<() => void>();
 
 function notify(): void {
   listeners.forEach((listener) => listener());
+}
+
+function finishInstalling(label: string): void {
+  if (installTimer) {
+    clearTimeout(installTimer);
+    installTimer = null;
+  }
+  installing?.done(label);
+  installing = null;
+}
+
+function beginInstalling(): void {
+  installing = startStatus("Installing DOOMBOT");
+  installTimer = setTimeout(() => finishInstalling("Check your app list"), installTimeoutMilliseconds);
 }
 
 if (typeof window !== "undefined") {
@@ -22,6 +41,8 @@ if (typeof window !== "undefined") {
   });
   window.addEventListener("appinstalled", () => {
     deferred = null;
+    installedEventSeen = true;
+    finishInstalling("App installed");
     notify();
   });
 }
@@ -57,8 +78,13 @@ export async function promptInstall(): Promise<boolean> {
 
 export async function installApp(): Promise<void> {
   if (canPromptInstall()) {
+    installedEventSeen = false;
     if (await promptInstall()) {
-      announceStatus("App installed");
+      if (installedEventSeen) {
+        announceStatus("App installed");
+      } else {
+        beginInstalling();
+      }
     }
     return;
   }
