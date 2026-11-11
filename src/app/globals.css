@@ -341,3 +341,121 @@ body {
     display: none;
   }
 }
+
+.launch-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.4rem;
+  background: radial-gradient(circle at 50% 42%, #1b3326 0%, #0d1210 68%);
+  transition: opacity 0.6s ease, visibility 0.6s ease;
+}
+
+.launch-screen-leaving {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.launch-emblem {
+  width: 124px;
+  height: 124px;
+  animation: launch-rise 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.launch-hex {
+  transform-origin: 60px 60px;
+  animation: launch-spin 14s linear infinite;
+}
+
+.launch-core {
+  transform-origin: 60px 60px;
+  animation: launch-pulse 1.6s ease-in-out infinite;
+}
+
+.launch-title {
+  margin: 0;
+  padding-left: 0.32em;
+  font-family: var(--font-sora), system-ui, sans-serif;
+  font-weight: 600;
+  font-size: 1.5rem;
+  letter-spacing: 0.32em;
+  color: var(--ink);
+  animation: launch-fade 0.9s 0.25s both;
+}
+
+.launch-bar {
+  width: 160px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--line);
+  overflow: hidden;
+}
+
+.launch-bar span {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: var(--doom);
+  transform-origin: left;
+  animation: launch-load 1.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes launch-rise {
+  from {
+    opacity: 0;
+    transform: scale(0.7) rotate(-20deg);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes launch-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes launch-pulse {
+  0%,
+  100% {
+    transform: scale(0.85);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(1.08);
+    opacity: 1;
+  }
+}
+
+@keyframes launch-fade {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes launch-load {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .launch-screen *,
+  .launch-screen {
+    animation: none !important;
+  }
+}
