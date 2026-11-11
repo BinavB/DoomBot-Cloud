@@ -27,7 +27,7 @@ export function AppShell({ title, children, bare = false, actions, mobileActions
           </div>
         </header>
         <main className="min-h-0 flex-1 overflow-y-auto overscroll-contain">{children}</main>
-        <StatusPill floating />
+        <StatusPill />
       </div>
     </div>
   );

@@ -1,5 +1,5 @@
 import ReactMarkdown from "react-markdown";
-import { removeLongDashes } from "@/lib/clean-text";
+import { linkBinavHandle, removeLongDashes } from "@/lib/clean-text";
 
 export function Markdown({ text }: { text: string }) {
   return (
@@ -13,7 +13,7 @@ export function Markdown({ text }: { text: string }) {
           ),
         }}
       >
-        {removeLongDashes(text)}
+        {linkBinavHandle(removeLongDashes(text))}
       </ReactMarkdown>
     </div>
   );

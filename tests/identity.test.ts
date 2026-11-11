@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { systemPrompt } from "@/lib/agent/run";
-import { removeLongDashes } from "@/lib/clean-text";
+import { linkBinavHandle, removeLongDashes } from "@/lib/clean-text";
 import { doombotIdentity, replyStyleRules } from "@/lib/identity";
 
 describe("DOOMBOT identity", () => {
@@ -46,5 +46,14 @@ describe("reply style", () => {
     expect(removeLongDashes("I’m back up — no issues")).toBe("I’m back up, no issues");
     expect(removeLongDashes("Fine – thanks")).toBe("Fine, thanks");
     expect(removeLongDashes("3–4 working days")).toBe("3–4 working days");
+  });
+
+  it("always links the binav.b handle to the Google search, whatever the model wrote", () => {
+    const search = "https://www.google.com/search?q=binav.b";
+
+    expect(linkBinavHandle("online as binav.b, a developer")).toBe(`online as [binav.b](${search}), a developer`);
+    expect(linkBinavHandle("online as [binav.b](https://binav.b)")).toBe(`online as [binav.b](${search})`);
+    expect(linkBinavHandle(`[Search binav.b on Google](${search})`)).toBe(`[Search binav.b on Google](${search})`);
+    expect(linkBinavHandle("[docs](https://example.com) and binav.b")).toBe(`[docs](https://example.com) and [binav.b](${search})`);
   });
 });

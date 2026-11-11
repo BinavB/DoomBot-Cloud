@@ -1,6 +1,5 @@
 "use client";
 
-import { usePathname } from "next/navigation";
 import { useEffect, useSyncExternalStore } from "react";
 import { Icon } from "@/components/icon";
 import { messagesFor } from "@/components/status-actions";
@@ -43,22 +42,21 @@ function watchRequests(): void {
   };
 }
 
-export function StatusPill({ floating = false }: { floating?: boolean }) {
-  const pathname = usePathname();
+export function StatusPill() {
   const status = useSyncExternalStore(subscribeStatus, readStatus, () => null);
 
   useEffect(() => {
     watchRequests();
   }, []);
 
-  if (!status || (floating && pathname === "/")) {
+  if (!status) {
     return null;
   }
 
   const pill = (
     <div
       role={status.tone === "error" ? "alert" : "status"}
-      className={`flex h-9 max-w-full min-w-0 items-center gap-2.5 rounded-full border bg-raised px-3.5 text-sm text-ink ${
+      className={`flex h-9 max-w-full min-w-0 items-center gap-2.5 rounded-full border bg-raised/60 px-3.5 shadow-lg backdrop-blur-md text-sm text-ink ${
         status.tone === "error" ? "border-danger/60" : "border-line"
       }`}
     >
@@ -79,13 +77,9 @@ export function StatusPill({ floating = false }: { floating?: boolean }) {
     </div>
   );
 
-  if (floating) {
-    return (
-      <div className="pointer-events-none fixed inset-x-0 bottom-[max(1rem,env(safe-area-inset-bottom))] z-50 flex justify-center px-4">
-        <div className="pointer-events-auto flex max-w-[min(32rem,100%)] min-w-0">{pill}</div>
-      </div>
-    );
-  }
-
-  return <div className="mx-auto mb-2 flex w-full max-w-3xl min-w-0 justify-center">{pill}</div>;
+  return (
+    <div className="pointer-events-none fixed inset-x-0 top-[max(0.75rem,env(safe-area-inset-top))] z-50 flex justify-center px-4">
+      <div className="pointer-events-auto flex max-w-[min(32rem,100%)] min-w-0">{pill}</div>
+    </div>
+  );
 }
