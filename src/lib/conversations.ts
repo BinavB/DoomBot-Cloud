@@ -51,6 +51,7 @@ async function findEmptyConversation(userId: number): Promise<Conversation | und
     `SELECT id, title, updated_at FROM conversations c
      WHERE c.user_id = ? AND c.title = ?
        AND NOT EXISTS (SELECT 1 FROM messages m WHERE m.user_id = c.user_id AND m.conversation_id = c.id)
+       AND NOT EXISTS (SELECT 1 FROM shared_chats s WHERE s.user_id = c.user_id AND s.conversation_id = c.id)
      ORDER BY c.updated_at DESC LIMIT 1`,
     [userId, defaultTitle],
   );

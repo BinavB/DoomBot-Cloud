@@ -28,6 +28,15 @@ describe("new chat", () => {
     expect(await asUser(62, () => listConversations())).toHaveLength(2);
   });
 
+  it("never reuses an empty chat that still has a share link", async () => {
+    const shared = await asUser(66, () => createConversation());
+    await runStatement("INSERT INTO shared_chats (token, user_id, conversation_id) VALUES ('tok-66', 66, ?)", [shared.id]);
+
+    const next = await asUser(66, () => createConversation());
+
+    expect(next.id).not.toBe(shared.id);
+  });
+
   it("does not hand one account another account's empty chat", async () => {
     const mine = await asUser(63, () => createConversation());
     const theirs = await asUser(64, () => createConversation());
