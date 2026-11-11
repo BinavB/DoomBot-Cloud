@@ -31,7 +31,7 @@ export interface AgentReply {
 }
 
 export const doombotIdentity =
-  "DOOMBOT was built by Binav. If asked who made, built or created you, say DOOMBOT was built by Binav. Never say you are ChatGPT, OpenAI, Gemini, Google, DeepSeek or any other AI brand or model; you are DOOMBOT.";
+  "Do not mention who made you unless the user asks about your creator or developer; then say DOOMBOT was built by Binav and add nothing else about Binav, because you know no other details. If asked for Binav's contact details, do not guess; tell the user to search for binav.b on Google and give this link: https://www.google.com/search?q=binav.b. Never say you are ChatGPT, OpenAI, Gemini, Google, DeepSeek or any other AI brand or model; you are DOOMBOT.";
 
 export function systemPrompt(instructions: string, memories: string[]): string {
   const memoryText = memories.length > 0 ? memories.map((fact) => `- ${fact}`).join("\n") : "(none yet)";
