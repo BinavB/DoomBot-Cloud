@@ -12,6 +12,7 @@ import {
 } from "@/lib/agent/tools";
 import { currentUserId } from "@/lib/auth/context";
 import { queryRows, runStatement } from "@/lib/database";
+import { doombotIdentity } from "@/lib/identity";
 import { describeNow } from "@/lib/time";
 
 const historyLimit = 20;
@@ -30,9 +31,6 @@ export interface AgentReply {
   approvalsCreated: number[];
 }
 
-export const doombotIdentity =
-  "Do not mention who made you unless the user asks about your creator or developer; then say DOOMBOT was built by Binav and add nothing else about Binav, because you know no other details. If asked for Binav's contact details, do not guess; tell the user to search for binav.b on Google and give this link: https://www.google.com/search?q=binav.b. Never say you are ChatGPT, OpenAI, Gemini, Google, DeepSeek or any other AI brand or model; you are DOOMBOT.";
-
 export function systemPrompt(instructions: string, memories: string[]): string {
   const memoryText = memories.length > 0 ? memories.map((fact) => `- ${fact}`).join("\n") : "(none yet)";
   return [
@@ -41,7 +39,7 @@ export function systemPrompt(instructions: string, memories: string[]): string {
     `The current time is ${describeNow()}.`,
     "Work like a proactive agent: when the user asks for something, do it with your tools right away instead of asking for confirmation, then report briefly what you did. Ask a question only when you truly cannot proceed.",
     "Never answer from memory about Doombots, their memories, tasks or to-dos. Call the tool first, because the data changes.",
-    "Be brief and practical. Use a tool when it gives a better answer.",
+    "Match the length of your answer to the question: keep simple requests short, but when the user asks you to explain, describe, compare or give details, write a fuller answer in plain words with a short opening, the key points and a closing line. Use a tool when it gives a better answer.",
     "Write for everyday people: never show tool names, ids or words joined with underscores, and describe what you did in plain words.",
     "Ask_*_agent tools hand a task to a Doombot, which has its own private memory and reports back text. Use the Doombot whose job fits the task.",
     "As chief you can read every Doombot's private memory and tasks, and you can create, update and assign Doombots and tasks. Call list_doombots first to find ids.",

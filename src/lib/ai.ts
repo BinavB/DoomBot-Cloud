@@ -2,6 +2,7 @@ import { config, type AiProvider } from "@/lib/config";
 import { AgentError, ProviderHttpError } from "@/lib/errors";
 import { currentUserIsGuest } from "@/lib/auth/context";
 import { guestDailyTokenLimit, guestsDailyTokenBudget } from "@/lib/auth/guest-limits";
+import { isCoolingDown, markFailed } from "@/lib/provider-health";
 import { guestTokensUsedToday, recordUsage, tokensUsedToday } from "@/lib/usage";
 
 export interface ToolCall {
@@ -46,6 +47,8 @@ interface CompletionResponse {
   }[];
   usage?: { prompt_tokens: number; completion_tokens: number };
 }
+
+export const busyMessage = "DOOMBOT is very busy right now. Please try again in a minute.";
 
 const retryableStatuses = new Set([500, 502, 503, 504]);
 const retryDelayMilliseconds = 2000;
@@ -265,23 +268,29 @@ export async function createChatCompletion(
     );
   }
 
+  const attempts = providers.flatMap((provider) => provider.models.map((model) => ({ provider, model })));
+  const healthy = attempts.filter(({ provider, model }) => !isCoolingDown(provider.name, model));
   const failures: string[] = [];
-  for (const provider of providers) {
-    for (const model of provider.models) {
-      try {
-        return await requestWithRetry(provider, model, messages, tools, options);
-      } catch (error) {
-        if (options.signal?.aborted) {
-          throw error;
-        }
-        const reason = error instanceof Error ? error.message : String(error);
-        failures.push(`${provider.name}/${model}: ${reason.slice(0, 160)}`);
-        if (error instanceof ProviderHttpError && [401, 402, 403].includes(error.status)) {
-          break;
-        }
+  const skippedProviders = new Set<string>();
+  for (const { provider, model } of healthy.length > 0 ? healthy : attempts) {
+    if (skippedProviders.has(provider.name)) {
+      continue;
+    }
+    try {
+      return await requestWithRetry(provider, model, messages, tools, options);
+    } catch (error) {
+      if (options.signal?.aborted) {
+        throw error;
+      }
+      const status = error instanceof ProviderHttpError ? error.status : undefined;
+      const reason = error instanceof Error ? error.message : String(error);
+      markFailed(provider.name, model, status);
+      failures.push(`${provider.name}/${model}: ${reason.slice(0, 160)}`);
+      if (status !== undefined && [401, 402, 403].includes(status)) {
+        skippedProviders.add(provider.name);
       }
     }
   }
   console.error(`[ai] all providers failed: ${failures.join(" | ")}`);
-  throw new AgentError(`All AI providers failed. ${failures.join(" | ")}`);
+  throw new AgentError(busyMessage);
 }
