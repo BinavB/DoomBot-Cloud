@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { FloatingNotice } from "@/components/floating-notice";
+import { PageNotice } from "@/components/page-notice";
 import { Icon } from "@/components/icon";
 import { Markdown } from "@/components/markdown";
 import { urlBase64ToUint8Array } from "@/lib/push-client";
@@ -239,7 +239,7 @@ export function AlertsView() {
         </div>
       </div>
 
-      {error && <FloatingNotice tone="error">{error}</FloatingNotice>}
+      {error && <PageNotice tone="error">{error}</PageNotice>}
 
       {alerts.length === 0 ? (
         <p className="rounded-2xl border border-line bg-panel p-6 text-sm text-muted">

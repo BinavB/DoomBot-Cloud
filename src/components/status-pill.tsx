@@ -53,10 +53,10 @@ export function StatusPill() {
     return null;
   }
 
-  const pill = (
+  return (
     <div
       role={status.tone === "error" ? "alert" : "status"}
-      className={`flex h-9 max-w-full min-w-0 items-center gap-2.5 rounded-full border bg-raised/60 px-3.5 shadow-lg backdrop-blur-md text-sm text-ink ${
+      className={`flex h-9 max-w-[min(32rem,100%)] min-w-0 items-center gap-2.5 rounded-full border bg-raised/60 px-3.5 text-sm text-ink backdrop-blur-md ${
         status.tone === "error" ? "border-danger/60" : "border-line"
       }`}
     >
@@ -74,12 +74,6 @@ export function StatusPill() {
           <Icon name="close" size={16} />
         </button>
       )}
-    </div>
-  );
-
-  return (
-    <div className="pointer-events-none fixed inset-x-0 top-[max(0.75rem,env(safe-area-inset-top))] z-50 flex justify-center px-4">
-      <div className="pointer-events-auto flex max-w-[min(32rem,100%)] min-w-0">{pill}</div>
     </div>
   );
 }

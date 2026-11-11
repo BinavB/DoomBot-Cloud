@@ -5,7 +5,7 @@ import type { RefObject } from "react";
 import type { ChatLine } from "@/app/_components/chat/chat-types";
 import { suggestions } from "@/app/_components/chat/chat-types";
 import { DoomMark } from "@/components/doom-mark";
-import { FloatingNotice } from "@/components/floating-notice";
+import { PageNotice } from "@/components/page-notice";
 import { Icon } from "@/components/icon";
 import type { ShareNotice } from "@/components/chat-store";
 import { Markdown } from "@/components/markdown";
@@ -182,7 +182,7 @@ export function ChatMessages({ lines, empty, sending, editingId, editDraft, onEd
       )}
 
       {shareNotice && (
-        <FloatingNotice>
+        <PageNotice>
           <div className="flex flex-col gap-2">
             <p>Link copied. Anyone with this link can read this chat for 30 days, so share it only with people you trust.</p>
             <p className="break-all text-xs text-muted">{shareNotice.url}</p>
@@ -198,19 +198,19 @@ export function ChatMessages({ lines, empty, sending, editingId, editDraft, onEd
               </button>
             </div>
           </div>
-        </FloatingNotice>
+        </PageNotice>
       )}
 
       {showApprovalNotice && (
-        <FloatingNotice tone="neutral">
+        <PageNotice tone="neutral">
           An action is waiting for you.{" "}
           <Link href="/approvals" className="font-medium text-signal underline underline-offset-2">
             Review it in Approvals
           </Link>
-        </FloatingNotice>
+        </PageNotice>
       )}
 
-      {error && <FloatingNotice tone="error">{error}</FloatingNotice>}
+      {error && <PageNotice tone="error">{error}</PageNotice>}
 
       <div ref={endRef} />
     </div>

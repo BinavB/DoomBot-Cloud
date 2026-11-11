@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { chatMenuItems } from "@/components/chat-menu-items";
-import { createChat, setMode, useChatState } from "@/components/chat-store";
+import { setMode, useChatState } from "@/components/chat-store";
 import { Icon } from "@/components/icon";
 import { Menu, type MenuItem } from "@/components/menu";
 
@@ -70,14 +70,9 @@ export function ChatActionsMenu() {
   );
 }
 
-export function ChatHeaderActions({ withNewChat = false }: { withNewChat?: boolean }) {
+export function ChatHeaderActions() {
   return (
     <div className="flex items-center">
-      {withNewChat && (
-        <button type="button" onClick={() => void createChat()} aria-label="New chat" className={iconButton}>
-          <Icon name="edit_square" size={20} />
-        </button>
-      )}
       <ChatActionsMenu />
     </div>
   );

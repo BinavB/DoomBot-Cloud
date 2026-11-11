@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { InstallButton } from "@/components/install-button";
 import { SidebarNav } from "@/components/sidebar-nav";
+import { pageNoticesId } from "@/components/page-notice";
 import { StatusPill } from "@/components/status-pill";
 
 interface AppShellProps {
@@ -26,8 +27,10 @@ export function AppShell({ title, children, bare = false, actions, mobileActions
             {actions}
           </div>
         </header>
+        <div id={pageNoticesId} className="flex shrink-0 flex-col items-center gap-2 px-4 pt-3 empty:hidden">
+          <StatusPill />
+        </div>
         <main className="min-h-0 flex-1 overflow-y-auto overscroll-contain">{children}</main>
-        <StatusPill />
       </div>
     </div>
   );

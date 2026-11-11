@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { FloatingNotice } from "@/components/floating-notice";
+import { PageNotice } from "@/components/page-notice";
 import { jsonHeaders, type Bot, type BotTask } from "@/lib/bots/client";
 import { AssignForm } from "./assign-form";
 import { BotList } from "./bot-list";
@@ -100,9 +100,9 @@ export function BotsView() {
       />
 
       <div className="flex min-w-0 flex-col gap-6">
-        {error && <FloatingNotice tone="error">{error}</FloatingNotice>}
+        {error && <PageNotice tone="error">{error}</PageNotice>}
 
-        {notice && <FloatingNotice>{notice}</FloatingNotice>}
+        {notice && <PageNotice>{notice}</PageNotice>}
 
         {creating && (
           <DesignForm onDesigned={handleDesigned} onError={setError} />

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { FloatingNotice } from "@/components/floating-notice";
+import { PageNotice } from "@/components/page-notice";
 import { Markdown } from "@/components/markdown";
 import { defaultTopics, type TopicId } from "@/lib/briefing/topics";
 import { BriefingTopics } from "./briefing-topics";
@@ -81,7 +81,7 @@ export function BriefingView() {
         />
       )}
 
-      {error && <FloatingNotice tone="error">{error}</FloatingNotice>}
+      {error && <PageNotice tone="error">{error}</PageNotice>}
 
       {briefing && (
         <article className="rounded-2xl border border-line bg-panel px-6 py-6">

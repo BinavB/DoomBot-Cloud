@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useSyncExternalStore } from "react";
 import { DoomMark } from "@/components/doom-mark";
-import { FloatingNotice } from "@/components/floating-notice";
+import { PageNotice } from "@/components/page-notice";
 import { GoogleLogo } from "@/components/google-logo";
 import { Icon } from "@/components/icon";
 
@@ -44,7 +44,7 @@ export function LoginCard() {
           Sign in with Google. Your chats, Doombots and memories stay private to your account.
         </p>
       </div>
-      {message && <FloatingNotice tone="error">{message}</FloatingNotice>}
+      {message && <PageNotice tone="error">{message}</PageNotice>}
       <a
         href="/api/auth/google/start"
         className="flex h-11 w-full items-center justify-center gap-3 rounded-xl border border-white/10 bg-white px-4 text-sm font-semibold text-[#1f1f1f] transition-colors hover:bg-[#f1f3f4]"
