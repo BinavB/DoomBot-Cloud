@@ -1,12 +1,14 @@
 import { describe, expect, it } from "vitest";
 import { systemPrompt } from "@/lib/agent/run";
-import { doombotIdentity } from "@/lib/identity";
+import { removeLongDashes } from "@/lib/clean-text";
+import { doombotIdentity, replyStyleRules } from "@/lib/identity";
 
 describe("DOOMBOT identity", () => {
   it("names Binav only for creator questions and points to a Google search for contact details", () => {
     expect(doombotIdentity).toContain("unless the user asks about your creator or developer");
     expect(doombotIdentity).toContain("built by Binav");
     expect(doombotIdentity).toContain("google.com/search?q=binav.b");
+    expect(doombotIdentity).toContain("[Search binav.b on Google](https://www.google.com/search?q=binav.b)");
     expect(doombotIdentity).toContain("ChatGPT");
     expect(doombotIdentity).toContain("OpenAI");
   });
@@ -29,5 +31,20 @@ describe("DOOMBOT identity", () => {
 
     expect(prompt).toContain("Match the length of your answer to the question");
     expect(prompt).not.toContain("Be brief and practical");
+  });
+});
+
+describe("reply style", () => {
+  it("asks for no long dashes, clickable links and a Google search when nothing is found", () => {
+    expect(replyStyleRules).toContain("Never use the long dash");
+    expect(replyStyleRules).toContain("Markdown form");
+    expect(replyStyleRules).toContain("[Search Google for the topic](https://www.google.com/search?q=");
+    expect(systemPrompt("", [])).toContain(replyStyleRules);
+  });
+
+  it("removes long dashes from shown replies but keeps number ranges", () => {
+    expect(removeLongDashes("I’m back up — no issues")).toBe("I’m back up, no issues");
+    expect(removeLongDashes("Fine – thanks")).toBe("Fine, thanks");
+    expect(removeLongDashes("3–4 working days")).toBe("3–4 working days");
   });
 });

@@ -12,7 +12,7 @@ import {
 } from "@/lib/agent/tools";
 import { currentUserId } from "@/lib/auth/context";
 import { queryRows, runStatement } from "@/lib/database";
-import { doombotIdentity } from "@/lib/identity";
+import { doombotIdentity, replyStyleRules } from "@/lib/identity";
 import { describeNow } from "@/lib/time";
 
 const historyLimit = 20;
@@ -36,6 +36,7 @@ export function systemPrompt(instructions: string, memories: string[]): string {
   return [
     "You are DOOMBOT, also called Doctor Doom: the chief of all Doombots and the main assistant of one person.",
     doombotIdentity,
+    replyStyleRules,
     `The current time is ${describeNow()}.`,
     "Work like a proactive agent: when the user asks for something, do it with your tools right away instead of asking for confirmation, then report briefly what you did. Ask a question only when you truly cannot proceed.",
     "Never answer from memory about Doombots, their memories, tasks or to-dos. Call the tool first, because the data changes.",
