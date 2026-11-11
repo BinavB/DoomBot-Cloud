@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useSyncExternalStore } from "react";
+import { FloatingNotice } from "@/components/floating-notice";
 import { Icon } from "@/components/icon";
 import { BriefingTopicsPicker } from "@/components/briefing-topics-picker";
 import { installApp, isInstalled, subscribeInstall } from "@/components/install-prompt";
@@ -103,11 +104,7 @@ export function SettingsView() {
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 px-4 py-6 md:px-6 md:py-8">
-      {error && (
-        <p role="alert" className="rounded-xl border border-danger/40 px-4 py-3 text-sm text-danger">
-          {error}
-        </p>
-      )}
+      {error && <FloatingNotice tone="error">{error}</FloatingNotice>}
 
       <section className="flex flex-col gap-3 rounded-2xl border border-line bg-panel p-5">
         <h2 className="font-display text-lg font-semibold">Home city and time zone</h2>

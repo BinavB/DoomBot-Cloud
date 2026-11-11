@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { FloatingNotice } from "@/components/floating-notice";
 import { jsonHeaders, type Bot, type BotTask } from "@/lib/bots/client";
 import { AssignForm } from "./assign-form";
 import { BotList } from "./bot-list";
@@ -99,23 +100,9 @@ export function BotsView() {
       />
 
       <div className="flex min-w-0 flex-col gap-6">
-        {error && (
-          <p
-            role="alert"
-            className="rounded-xl border border-danger/40 px-4 py-3 text-sm text-danger"
-          >
-            {error}
-          </p>
-        )}
+        {error && <FloatingNotice tone="error">{error}</FloatingNotice>}
 
-        {notice && (
-          <p
-            role="status"
-            className="rounded-xl border border-doom/50 px-4 py-3 text-sm"
-          >
-            {notice}
-          </p>
-        )}
+        {notice && <FloatingNotice>{notice}</FloatingNotice>}
 
         {creating && (
           <DesignForm onDesigned={handleDesigned} onError={setError} />

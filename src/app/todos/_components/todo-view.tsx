@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState, type FormEvent } from "react";
+import { FloatingNotice } from "@/components/floating-notice";
 import { Icon } from "@/components/icon";
 import { TodoItem } from "./todo-item";
 import { jsonHeaders, type Todo } from "./todo-types";
@@ -122,11 +123,7 @@ export function TodoView() {
         </button>
       </form>
 
-      {error && (
-        <p role="alert" className="rounded-xl border border-danger/40 px-4 py-3 text-sm text-danger">
-          {error}
-        </p>
-      )}
+      {error && <FloatingNotice tone="error">{error}</FloatingNotice>}
 
       {loaded && todos.length === 0 && !error && (
         <div className="flex flex-col items-center gap-2 rounded-2xl border border-dashed border-line px-6 py-10 text-center">

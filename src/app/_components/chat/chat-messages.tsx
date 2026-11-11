@@ -5,6 +5,7 @@ import type { RefObject } from "react";
 import type { ChatLine } from "@/app/_components/chat/chat-types";
 import { suggestions } from "@/app/_components/chat/chat-types";
 import { DoomMark } from "@/components/doom-mark";
+import { FloatingNotice } from "@/components/floating-notice";
 import { Icon } from "@/components/icon";
 import type { ShareNotice } from "@/components/chat-store";
 import { Markdown } from "@/components/markdown";
@@ -181,37 +182,35 @@ export function ChatMessages({ lines, empty, sending, editingId, editDraft, onEd
       )}
 
       {shareNotice && (
-        <div role="status" className="flex flex-col gap-2 rounded-xl border border-doom/50 px-4 py-3 text-sm">
-          <p>Link copied. Anyone with this link can read this chat for 30 days, so share it only with people you trust.</p>
-          <p className="break-all text-xs text-muted">{shareNotice.url}</p>
-          <div className="flex gap-3">
-            <button type="button" onClick={() => actions.onCopyShare(shareNotice.url)} className="font-medium text-doom underline underline-offset-2">
-              Copy again
-            </button>
-            <button type="button" onClick={() => actions.onStopSharing(shareNotice.id)} className="font-medium text-danger underline underline-offset-2">
-              Stop sharing
-            </button>
-            <button type="button" onClick={actions.onDismissShare} className="text-muted underline underline-offset-2">
-              Dismiss
-            </button>
+        <FloatingNotice>
+          <div className="flex flex-col gap-2">
+            <p>Link copied. Anyone with this link can read this chat for 30 days, so share it only with people you trust.</p>
+            <p className="break-all text-xs text-muted">{shareNotice.url}</p>
+            <div className="flex gap-3">
+              <button type="button" onClick={() => actions.onCopyShare(shareNotice.url)} className="font-medium text-doom underline underline-offset-2">
+                Copy again
+              </button>
+              <button type="button" onClick={() => actions.onStopSharing(shareNotice.id)} className="font-medium text-danger underline underline-offset-2">
+                Stop sharing
+              </button>
+              <button type="button" onClick={actions.onDismissShare} className="text-muted underline underline-offset-2">
+                Dismiss
+              </button>
+            </div>
           </div>
-        </div>
+        </FloatingNotice>
       )}
 
       {showApprovalNotice && (
-        <p className="rounded-xl border border-signal/40 px-4 py-3 text-sm">
+        <FloatingNotice tone="neutral">
           An action is waiting for you.{" "}
           <Link href="/approvals" className="font-medium text-signal underline underline-offset-2">
             Review it in Approvals
           </Link>
-        </p>
+        </FloatingNotice>
       )}
 
-      {error && (
-        <p role="alert" className="rounded-xl border border-danger/40 px-4 py-3 text-sm text-danger">
-          {error}
-        </p>
-      )}
+      {error && <FloatingNotice tone="error">{error}</FloatingNotice>}
 
       <div ref={endRef} />
     </div>

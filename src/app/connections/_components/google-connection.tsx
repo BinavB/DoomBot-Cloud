@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useSyncExternalStore } from "react";
+import { FloatingNotice } from "@/components/floating-notice";
 
 function subscribeToLocation(onChange: () => void): () => void {
   window.addEventListener("popstate", onChange);
@@ -31,14 +32,7 @@ export function GoogleConnection() {
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 px-4 py-8 md:px-6">
-      {message && (
-        <p
-          role="status"
-          className={`rounded-xl border px-4 py-3 text-sm ${message.failed ? "border-danger/40 text-danger" : "border-doom/50"}`}
-        >
-          {message.text}
-        </p>
-      )}
+      {message && <FloatingNotice tone={message.failed ? "error" : "success"}>{message.text}</FloatingNotice>}
 
       <section className="flex flex-col gap-4 rounded-2xl border border-line bg-panel p-6">
         <div className="flex items-center justify-between gap-4">

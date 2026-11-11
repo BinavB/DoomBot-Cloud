@@ -143,26 +143,31 @@ body {
   }
 }
 
-@keyframes thinking-glow {
+@keyframes thinking-dot {
   0%,
   100% {
-    opacity: 0.6;
-    text-shadow: 0 0 0 transparent;
+    opacity: 0.25;
+    transform: scale(0.7);
+    box-shadow: 0 0 0 transparent;
   }
-  50% {
+  40% {
     opacity: 1;
-    text-shadow: 0 0 10px var(--doom);
+    transform: scale(1);
+    box-shadow: 0 0 6px var(--doom);
   }
 }
 
-.thinking-spark {
-  display: inline-block;
-  width: 1.1em;
-  text-align: center;
-  color: var(--doom);
-  font-size: 1.05rem;
-  line-height: 1;
-  animation: thinking-glow 1.6s ease-in-out infinite;
+.thinking-dots {
+  display: inline-grid;
+  grid-template-columns: repeat(3, 5px);
+  grid-template-rows: repeat(2, 5px);
+  gap: 3px;
+}
+
+.thinking-dots > span {
+  border-radius: 9999px;
+  background: var(--doom);
+  animation: thinking-dot 1.2s ease-in-out infinite;
 }
 
 .thinking-text {
@@ -184,9 +189,8 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .thinking-spark {
+  .thinking-dots > span {
     animation: none;
-    opacity: 1;
   }
 
   .thinking-text {

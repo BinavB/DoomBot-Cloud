@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { announceApprovalsChanged, approvalsChangedEvent } from "@/components/events";
+import { FloatingNotice } from "@/components/floating-notice";
 
 interface PendingApproval {
   id: number;
@@ -60,23 +61,14 @@ export function ApprovalsView() {
       </p>
 
       {lastDecision && (
-        <p
-          role="status"
-          className={`rounded-xl border px-4 py-3 text-sm ${
-            lastDecision.status === "approved" ? "border-doom/50" : "border-line"
-          }`}
-        >
+        <FloatingNotice tone={lastDecision.status === "approved" ? "success" : "neutral"}>
           {lastDecision.status === "approved" && `Approved: ${lastDecision.result ?? lastDecision.summary}`}
           {lastDecision.status === "denied" && `Denied: ${lastDecision.summary}`}
           {lastDecision.status === "failed" && `Approved, but it failed: ${lastDecision.result ?? "unknown error"}`}
-        </p>
+        </FloatingNotice>
       )}
 
-      {error && (
-        <p role="alert" className="rounded-xl border border-danger/40 px-4 py-3 text-sm text-danger">
-          {error}
-        </p>
-      )}
+      {error && <FloatingNotice tone="error">{error}</FloatingNotice>}
 
       {loaded && approvals.length === 0 && !error && <p className="text-muted">Nothing is waiting for you.</p>}
 
