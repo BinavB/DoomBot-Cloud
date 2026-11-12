@@ -24,6 +24,6 @@ export const GET = withUser(async () => {
     );
     return response;
   } catch {
-    return NextResponse.redirect(new URL("/settings?notion=error", config.appUrl));
+    return NextResponse.redirect(new URL("/connections?notion=error", config.appUrl));
   }
 });

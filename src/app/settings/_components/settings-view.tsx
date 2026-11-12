@@ -10,7 +10,6 @@ import { installApp, isInstalled, subscribeInstall } from "@/components/install-
 import { defaultTopics, maxTopics, type TopicId } from "@/lib/briefing/topics";
 import { SkillsSection } from "@/app/settings/_components/skills-section";
 import { ToolPoliciesSection } from "@/app/settings/_components/tool-policies-section";
-import { ConnectedAppsSection } from "@/app/settings/_components/connected-apps-section";
 
 interface Memory {
   id: number;
@@ -181,8 +180,6 @@ export function SettingsView() {
       <SkillsSection />
 
       <ToolPoliciesSection />
-
-      <ConnectedAppsSection />
 
       <section className="flex flex-col gap-3 rounded-2xl border border-line bg-panel p-5">
         <h2 className="font-display text-lg font-semibold">What DOOMBOT remembers about you</h2>

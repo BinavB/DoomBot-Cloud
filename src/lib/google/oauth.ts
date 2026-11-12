@@ -95,6 +95,26 @@ async function storedRefreshToken(userId: number): Promise<string | null> {
   return token;
 }
 
+export async function disconnectGoogle(): Promise<void> {
+  const userId = currentUserId();
+  const refreshToken = await storedRefreshToken(userId);
+  await runStatement("DELETE FROM google_tokens WHERE user_id = ?", [userId]);
+  accessTokenCache.delete(userId);
+  if (!refreshToken) {
+    return;
+  }
+  try {
+    await fetch("https://oauth2.googleapis.com/revoke", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({ token: refreshToken }),
+      signal: AbortSignal.timeout(10000),
+    });
+  } catch {
+    return;
+  }
+}
+
 export async function isGoogleConnected(): Promise<boolean> {
   return (await storedRefreshToken(currentUserId())) !== null;
 }
