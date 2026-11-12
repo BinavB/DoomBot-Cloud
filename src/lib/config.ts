@@ -95,5 +95,7 @@ export const config = {
   databaseToken: readText("TURSO_AUTH_TOKEN", ""),
   googleClientId: readText("GOOGLE_CLIENT_ID", ""),
   googleClientSecret: readText("GOOGLE_CLIENT_SECRET", ""),
+  notionClientId: readText("NOTION_CLIENT_ID", ""),
+  notionClientSecret: readText("NOTION_CLIENT_SECRET", ""),
   appUrl: readText("APP_URL", "http://localhost:3000").replace(/\/+$/, ""),
 };

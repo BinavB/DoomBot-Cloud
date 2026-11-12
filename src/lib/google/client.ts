@@ -22,16 +22,33 @@ export interface EmailSummary {
   snippet: string;
 }
 
-async function googleGet<T>(url: string): Promise<T> {
+function googleStatusError(status: number): AgentError {
+  if (status === 403) {
+    return new AgentError(
+      "Google refused the request (403). If this is a new permission, connect Google again on the Connections page.",
+    );
+  }
+  return new AgentError(`Google request failed (${status}).`);
+}
+
+async function googleFetch(url: string): Promise<Response> {
   const token = await getAccessToken();
   const response = await fetch(url, {
     headers: { Authorization: `Bearer ${token}` },
     signal: AbortSignal.timeout(15000),
   });
   if (!response.ok) {
-    throw new AgentError(`Google request failed (${response.status}).`);
+    throw googleStatusError(response.status);
   }
-  return (await response.json()) as T;
+  return response;
+}
+
+export async function googleGet<T>(url: string): Promise<T> {
+  return (await (await googleFetch(url)).json()) as T;
+}
+
+export async function googleGetText(url: string): Promise<string> {
+  return (await googleFetch(url)).text();
 }
 
 function formatClock(isoTime: string): string {

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { AppShell } from "@/components/app-shell";
 import { SettingsView } from "@/app/settings/_components/settings-view";
 
@@ -10,7 +11,9 @@ export const metadata: Metadata = {
 export default function SettingsPage() {
   return (
     <AppShell title="Settings">
-      <SettingsView />
+      <Suspense>
+        <SettingsView />
+      </Suspense>
     </AppShell>
   );
 }

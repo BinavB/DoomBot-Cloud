@@ -23,11 +23,13 @@ const userTables = [
   "notes",
   "skills",
   "suggestions",
+  "tool_policies",
+  "app_connections",
   "rate_limits",
   "message_feedback",
 ];
 
-const credentialTables = ["google_tokens", "rate_limits"];
+const credentialTables = ["google_tokens", "app_connections", "rate_limits"];
 
 export async function exportAccountData(): Promise<Record<string, unknown[]>> {
   const userId = currentUserId();

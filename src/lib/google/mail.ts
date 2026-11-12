@@ -1,4 +1,5 @@
 import { AgentError } from "@/lib/errors";
+import { findSensitiveData } from "@/lib/sensitive-data";
 
 export const maxRecipientLength = 254;
 export const maxSubjectLength = 200;
@@ -31,11 +32,16 @@ export function readOutgoingMail(args: Record<string, unknown>): OutgoingMail {
   if (!recipientPattern.test(to)) {
     throw new AgentError('"to" must be one email address.');
   }
-  return {
+  const mail = {
     to,
     subject: readMailField(args.subject, "subject", maxSubjectLength),
     body: readMailField(args.body, "body", maxMailBodyLength),
   };
+  const sensitive = findSensitiveData(`${mail.subject}\n${mail.body}`);
+  if (sensitive) {
+    throw new AgentError(`Not sent: the email seems to contain a ${sensitive}. Remove it and ask again.`);
+  }
+  return mail;
 }
 
 export function buildRawEmail(mail: OutgoingMail): string {

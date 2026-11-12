@@ -1,6 +1,7 @@
 import { currentUserId } from "@/lib/auth/context";
 import { queryRow, queryRows, runStatement } from "@/lib/database";
 import { findTool, type ToolArguments } from "@/lib/agent/tools";
+import { setToolPolicy } from "@/lib/agent/policies";
 
 export interface Approval {
   id: number;
@@ -10,6 +11,18 @@ export interface Approval {
   result: string | null;
   createdAt: string;
 }
+
+export interface Decision {
+  id: number;
+  summary: string;
+  status: string;
+  result: string | null;
+  resolvedAt: string | null;
+}
+
+export type ApprovalDecision = "approve" | "always" | "deny";
+
+const recentDecisionLimit = 20;
 
 interface ApprovalRow {
   id: number;
@@ -38,6 +51,33 @@ export async function createApproval(tool: string, summary: string, args: ToolAr
     [currentUserId(), tool, summary, JSON.stringify(args)],
   );
   return (row as { id: number }).id;
+}
+
+export async function recordDecision(
+  tool: string,
+  summary: string,
+  args: ToolArguments,
+  status: "approved" | "failed",
+  result: string,
+): Promise<void> {
+  await runStatement(
+    "INSERT INTO approvals (user_id, tool, summary, arguments, status, result, resolved_at) VALUES (?, ?, ?, ?, ?, ?, datetime('now'))",
+    [currentUserId(), tool, summary, JSON.stringify(args), status, result],
+  );
+}
+
+export async function listRecentDecisions(): Promise<Decision[]> {
+  const rows = await queryRows<{ id: number; summary: string; status: string; result: string | null; resolved_at: string | null }>(
+    "SELECT id, summary, status, result, resolved_at FROM approvals WHERE user_id = ? AND status != 'pending' ORDER BY id DESC LIMIT ?",
+    [currentUserId(), recentDecisionLimit],
+  );
+  return rows.map((row) => ({
+    id: row.id,
+    summary: row.summary,
+    status: row.status,
+    result: row.result,
+    resolvedAt: row.resolved_at,
+  }));
 }
 
 export async function listPendingApprovals(): Promise<Approval[]> {
@@ -69,15 +109,18 @@ function parseStoredArguments(json: string): ToolArguments {
     : {};
 }
 
-export async function decideApproval(id: number, decision: "approve" | "deny"): Promise<Approval | null> {
+export async function decideApproval(id: number, decision: ApprovalDecision): Promise<Approval | null> {
   const row = await findPending(id);
   if (!row) {
     return null;
   }
 
   if (decision === "deny") {
-    await closeApproval(id, "denied", "Denied by you.");
+    await closeApproval(id, "denied", "Refused by you.");
   } else {
+    if (decision === "always") {
+      await setToolPolicy(row.tool, "always");
+    }
     const tool = findTool(row.tool);
     if (!tool) {
       await closeApproval(id, "failed", `Unknown tool: ${row.tool}`);

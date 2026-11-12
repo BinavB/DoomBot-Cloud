@@ -2,7 +2,7 @@ import { createChatCompletion, type ChatMessage, type CompletionOptions, type To
 import { autoTitleConversation } from "@/lib/auto-title";
 import { touchConversation } from "@/lib/conversations";
 import { getCustomInstructions, listUserMemories } from "@/lib/settings";
-import { createApproval } from "@/lib/agent/approvals";
+import { handleApprovalTool } from "@/lib/agent/approval-policy";
 import { delegationSpecs, findBotForTool } from "@/lib/bots/delegation";
 import { startTask } from "@/lib/bots/run";
 import {
@@ -117,13 +117,7 @@ async function executeToolCall(call: ToolCall, approvalsCreated: number[]): Prom
   }
 
   if (tool.requiresApproval) {
-    try {
-      const id = await createApproval(tool.name, await tool.summarize(args), args);
-      approvalsCreated.push(id);
-      return `Queued as approval #${id}. This has NOT been done yet. Tell the user it waits for their approval.`;
-    } catch (error) {
-      return error instanceof Error ? error.message : "The action could not be queued.";
-    }
+    return handleApprovalTool(tool, args, approvalsCreated);
   }
 
   try {

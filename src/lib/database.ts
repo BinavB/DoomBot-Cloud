@@ -192,6 +192,20 @@ const schema = `
   );
   CREATE INDEX IF NOT EXISTS suggestions_user_index ON suggestions (user_id, status, id);
 
+  CREATE TABLE IF NOT EXISTS app_connections (
+    user_id INTEGER NOT NULL,
+    app TEXT NOT NULL,
+    secret TEXT NOT NULL,
+    PRIMARY KEY (user_id, app)
+  );
+
+  CREATE TABLE IF NOT EXISTS tool_policies (
+    user_id INTEGER NOT NULL,
+    tool TEXT NOT NULL,
+    policy TEXT NOT NULL,
+    PRIMARY KEY (user_id, tool)
+  );
+
   CREATE TABLE IF NOT EXISTS skills (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL,
