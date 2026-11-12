@@ -8,6 +8,7 @@ import { AgentError } from "@/lib/errors";
 export const googleScopes = [
   "https://www.googleapis.com/auth/calendar.readonly",
   "https://www.googleapis.com/auth/gmail.readonly",
+  "https://www.googleapis.com/auth/gmail.send",
   "https://www.googleapis.com/auth/tasks.readonly",
 ];
 

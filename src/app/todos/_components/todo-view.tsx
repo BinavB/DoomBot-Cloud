@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { PageNotice } from "@/components/page-notice";
 import { Icon } from "@/components/icon";
+import { SuggestionsPanel } from "./suggestions-panel";
 import { TodoItem } from "./todo-item";
 import { jsonHeaders, type Todo } from "./todo-types";
 
@@ -101,6 +102,7 @@ export function TodoView() {
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 px-4 py-8 md:px-6">
+      <SuggestionsPanel />
       <form onSubmit={add} className="flex gap-2">
         <label htmlFor="new-task" className="sr-only">
           New task

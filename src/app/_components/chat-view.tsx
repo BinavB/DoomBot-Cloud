@@ -1,13 +1,13 @@
 "use client";
 
-import { useRef, useState, type FormEvent, type KeyboardEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
 import { ChatComposer } from "@/app/_components/chat/chat-composer";
 import { ChatMessages, type MessageActions } from "@/app/_components/chat/chat-messages";
 import { lastUserBefore, visibleLines, type ChatLine } from "@/app/_components/chat/chat-types";
 import { useAttachments } from "@/app/_components/chat/use-attachments";
 import { useChatHistory } from "@/app/_components/chat/use-chat-history";
 import { useChatScroll } from "@/app/_components/chat/use-chat-scroll";
-import { createChat, dismissShareNotice, refreshChats, setChatBusy, setChatError, stopSharing, useChatState } from "@/components/chat-store";
+import { createChat, dismissShareNotice, refreshChats, setChatBusy, setChatError, stopSharing, takePendingPrompt, useChatState } from "@/components/chat-store";
 import { announceApprovalsChanged } from "@/components/events";
 import { Icon } from "@/components/icon";
 import { announceStatus, startStatus } from "@/components/status-store";
@@ -36,6 +36,17 @@ export function ChatView() {
   const lines = history.lines;
   const visible = visibleLines(lines, busy);
   const empty = history.loaded && lines.length === 0 && !busy;
+
+  const sendRef = useRef(send);
+  useEffect(() => {
+    sendRef.current = send;
+  });
+  useEffect(() => {
+    const pending = ready ? takePendingPrompt() : null;
+    if (pending) {
+      void sendRef.current(pending);
+    }
+  }, [ready]);
 
   function resizeComposer() {
     const element = composerRef.current;

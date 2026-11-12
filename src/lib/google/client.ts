@@ -1,6 +1,7 @@
 import { AgentError } from "@/lib/errors";
 import { getAccessToken } from "@/lib/google/oauth";
 import { currentTimeZone } from "@/lib/auth/context";
+import { buildRawEmail, type OutgoingMail } from "@/lib/google/mail";
 import { currentDay, offsetFor } from "@/lib/time";
 
 const dayMilliseconds = 24 * 60 * 60 * 1000;
@@ -11,7 +12,14 @@ interface CalendarEvent {
 }
 
 interface MessageHeaders {
+  snippet?: string;
   payload?: { headers?: { name: string; value: string }[] };
+}
+
+export interface EmailSummary {
+  from: string;
+  subject: string;
+  snippet: string;
 }
 
 async function googleGet<T>(url: string): Promise<T> {
@@ -61,9 +69,9 @@ export async function todaysCalendarEvents(): Promise<string[]> {
   });
 }
 
-export async function unreadEmails(): Promise<string[]> {
+export async function unreadEmailSummaries(limit: number): Promise<EmailSummary[]> {
   const list = await googleGet<{ messages?: { id: string }[] }>(
-    "https://gmail.googleapis.com/gmail/v1/users/me/messages?q=is%3Aunread&maxResults=5",
+    `https://gmail.googleapis.com/gmail/v1/users/me/messages?q=is%3Aunread&maxResults=${limit}`,
   );
   const messages = await Promise.all(
     (list.messages ?? []).map((message) =>
@@ -76,8 +84,33 @@ export async function unreadEmails(): Promise<string[]> {
     const headers = message.payload?.headers ?? [];
     const read = (name: string) =>
       headers.find((header) => header.name.toLowerCase() === name.toLowerCase())?.value ?? "";
-    return `From ${read("From") || "unknown"}: ${read("Subject") || "(no subject)"}`;
+    return {
+      from: read("From") || "unknown",
+      subject: read("Subject") || "(no subject)",
+      snippet: message.snippet ?? "",
+    };
   });
+}
+
+export async function unreadEmails(): Promise<string[]> {
+  const emails = await unreadEmailSummaries(5);
+  return emails.map((email) => `From ${email.from}: ${email.subject}`);
+}
+
+export async function sendEmail(mail: OutgoingMail): Promise<void> {
+  const token = await getAccessToken();
+  const response = await fetch("https://gmail.googleapis.com/gmail/v1/users/me/messages/send", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ raw: buildRawEmail(mail) }),
+    signal: AbortSignal.timeout(15000),
+  });
+  if (response.status === 403) {
+    throw new AgentError("Google refused to send the email. Connect Google again on the Connections page to allow sending mail.");
+  }
+  if (!response.ok) {
+    throw new AgentError(`Google could not send the email (${response.status}).`);
+  }
 }
 
 export async function openGoogleTasks(): Promise<string[]> {

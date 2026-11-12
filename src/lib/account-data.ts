@@ -21,6 +21,8 @@ const userTables = [
   "user_briefing_topics",
   "user_timezones",
   "notes",
+  "skills",
+  "suggestions",
   "rate_limits",
   "message_feedback",
 ];

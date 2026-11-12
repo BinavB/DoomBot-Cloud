@@ -8,6 +8,7 @@ import { Icon } from "@/components/icon";
 import { BriefingTopicsPicker } from "@/components/briefing-topics-picker";
 import { installApp, isInstalled, subscribeInstall } from "@/components/install-prompt";
 import { defaultTopics, maxTopics, type TopicId } from "@/lib/briefing/topics";
+import { SkillsSection } from "@/app/settings/_components/skills-section";
 
 interface Memory {
   id: number;
@@ -174,6 +175,8 @@ export function SettingsView() {
         </div>
         {message && <p role="status" className="text-sm text-muted">{message}</p>}
       </section>
+
+      <SkillsSection />
 
       <section className="flex flex-col gap-3 rounded-2xl border border-line bg-panel p-5">
         <h2 className="font-display text-lg font-semibold">What DOOMBOT remembers about you</h2>

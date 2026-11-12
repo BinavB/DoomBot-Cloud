@@ -112,6 +112,18 @@ export function setChatError(error: string | null): void {
   set({ error });
 }
 
+let pendingPrompt: string | null = null;
+
+export function queuePrompt(text: string): void {
+  pendingPrompt = text;
+}
+
+export function takePendingPrompt(): string | null {
+  const text = pendingPrompt;
+  pendingPrompt = null;
+  return text;
+}
+
 export async function createChat(): Promise<string | null> {
   const response = await fetch("/api/conversations", { method: "POST" });
   const data = (await response.json()) as { conversation?: Conversation; error?: string };

@@ -6,6 +6,7 @@ import { ownsConversation } from "@/lib/conversations";
 import { AgentError } from "@/lib/errors";
 import { isPdfDataUrl, readPdfText } from "@/lib/pdf";
 import { takeChatSlot } from "@/lib/rate-limit";
+import { findSkill, parseSkillCall, type Skill } from "@/lib/skills";
 
 const historyDisplayLimit = 200;
 const maxMessageLength = 4000;
@@ -53,6 +54,17 @@ export const POST = withUser(async (request: Request) => {
       { status: 400 },
     );
   }
+  const skillCall = parseSkillCall(message);
+  let skill: Skill | undefined;
+  if (skillCall) {
+    skill = await findSkill(skillCall.name);
+    if (!skill) {
+      return NextResponse.json(
+        { error: `There is no skill called /${skillCall.name}. Add it in Settings under Skills.` },
+        { status: 404 },
+      );
+    }
+  }
   let document: { name: string; text: string } | undefined;
   if (typeof body.pdf === "string") {
     if (!isPdfDataUrl(body.pdf)) {
@@ -98,6 +110,7 @@ export const POST = withUser(async (request: Request) => {
         conversationId,
         image,
         document,
+        skill,
         think: body.think === true,
         signal: controller.signal,
         onToken: (text) => {
