@@ -192,6 +192,13 @@ const schema = `
   );
   CREATE INDEX IF NOT EXISTS suggestions_user_index ON suggestions (user_id, status, id);
 
+  CREATE TABLE IF NOT EXISTS checkins (
+    user_id INTEGER PRIMARY KEY,
+    enabled INTEGER NOT NULL DEFAULT 0,
+    times TEXT NOT NULL DEFAULT '["09:00","16:30"]',
+    last_sent TEXT NOT NULL DEFAULT ''
+  );
+
   CREATE TABLE IF NOT EXISTS app_connections (
     user_id INTEGER NOT NULL,
     app TEXT NOT NULL,
@@ -273,6 +280,8 @@ async function openDatabase(): Promise<Client> {
   await client
     .execute("ALTER TABLE conversations ADD COLUMN title_locked INTEGER NOT NULL DEFAULT 0")
     .catch(() => undefined);
+  await client.execute("ALTER TABLE messages ADD COLUMN steps TEXT").catch(() => undefined);
+  await client.execute("ALTER TABLE bots ADD COLUMN provider TEXT").catch(() => undefined);
   await client.execute(
     "UPDATE bot_tasks SET status = 'failed', result = 'Interrupted by a server restart.', finished_at = datetime('now') WHERE status = 'running'",
   );

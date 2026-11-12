@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import type { RefObject } from "react";
+import { useState, type RefObject } from "react";
 import type { ChatLine } from "@/app/_components/chat/chat-types";
 import { suggestions } from "@/app/_components/chat/chat-types";
 import { DoomMark } from "@/components/doom-mark";
@@ -37,8 +37,42 @@ interface ChatMessagesProps {
   shareNotice: ShareNotice | null;
   showApprovalNotice: boolean;
   error: string | null;
+  activeStep: string | null;
   actions: MessageActions;
   endRef: RefObject<HTMLDivElement | null>;
+}
+
+function formatWorked(seconds: number | undefined): string {
+  if (seconds === undefined) {
+    return "Worked";
+  }
+  if (seconds < 60) {
+    return `Worked for ${seconds}s`;
+  }
+  return `Worked for ${Math.floor(seconds / 60)}m ${seconds % 60}s`;
+}
+
+function WorkedChip({ seconds, steps }: { seconds?: number; steps: string[] }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="mt-2">
+      <button
+        type="button"
+        onClick={() => setOpen((current) => !current)}
+        aria-expanded={open}
+        className="rounded-full border border-line px-3 py-1 text-xs text-muted hover:bg-raised"
+      >
+        {formatWorked(seconds)} · {steps.length} {steps.length === 1 ? "step" : "steps"}
+      </button>
+      {open && (
+        <ol className="mt-2 flex list-decimal flex-col gap-1 pl-5 text-sm text-muted">
+          {steps.map((step, index) => (
+            <li key={index}>{step}</li>
+          ))}
+        </ol>
+      )}
+    </div>
+  );
 }
 
 const hoverReveal = "opacity-100 transition-opacity hover:bg-raised md:opacity-0 md:group-hover:opacity-100 md:focus-visible:opacity-100";
@@ -133,6 +167,7 @@ function AssistantMessage({ line, index, copied, sending, actions }: {
       <DoomMark size={28} />
       <div className="min-w-0 flex-1 pt-0.5">
         {line.content.length > 0 && <Markdown text={line.content} />}
+        {showActions && line.steps && line.steps.length > 0 && <WorkedChip seconds={line.seconds} steps={line.steps} />}
         {showActions && (
           <div className="mt-2 flex flex-wrap gap-1">
             {canSpeak() && (
@@ -159,7 +194,7 @@ function AssistantMessage({ line, index, copied, sending, actions }: {
   );
 }
 
-export function ChatMessages({ lines, empty, sending, editingId, editDraft, onEditDraft, copiedId, shareNotice, showApprovalNotice, error, actions, endRef }: ChatMessagesProps) {
+export function ChatMessages({ lines, empty, sending, editingId, editDraft, onEditDraft, copiedId, shareNotice, showApprovalNotice, error, activeStep, actions, endRef }: ChatMessagesProps) {
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-6 md:gap-7 md:px-6 md:py-8">
       {empty && <EmptyState onSuggest={actions.onSuggest} />}
@@ -176,7 +211,7 @@ export function ChatMessages({ lines, empty, sending, editingId, editDraft, onEd
         <div data-assistant className="flex gap-3">
           <DoomMark size={28} />
           <div className="min-w-0 flex-1 pt-1">
-            <ThinkingIndicator />
+            <ThinkingIndicator label={activeStep ?? undefined} />
           </div>
         </div>
       )}

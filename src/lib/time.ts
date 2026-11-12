@@ -1,7 +1,7 @@
 import { currentTimeZone } from "@/lib/auth/context";
 
-export function currentDay(timeZone: string = currentTimeZone()): string {
-  return new Intl.DateTimeFormat("en-CA", { timeZone }).format(new Date());
+export function currentDay(timeZone: string = currentTimeZone(), at: Date = new Date()): string {
+  return new Intl.DateTimeFormat("en-CA", { timeZone }).format(at);
 }
 
 export function currentClock(timeZone: string = currentTimeZone(), at: Date = new Date()): string {

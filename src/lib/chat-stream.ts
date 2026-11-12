@@ -1,5 +1,5 @@
 export interface StreamEvent {
-  type: "token" | "done" | "error";
+  type: "token" | "step" | "done" | "error";
   text?: string;
   reply?: string;
   approvalsCreated?: number[];

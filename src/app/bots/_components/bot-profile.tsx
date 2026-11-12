@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { BotAvatar } from "@/components/bot-avatar";
 import { Icon } from "@/components/icon";
 import type { BotLook } from "@/lib/bots/look";
@@ -12,8 +12,14 @@ export interface ProfileBot {
   name: string;
   instructions: string;
   toolNames: string[];
+  provider?: string | null;
   builtIn: boolean;
   look: BotLook;
+}
+
+interface ProviderOption {
+  name: string;
+  label: string;
 }
 
 interface BotProfileProps<Bot extends ProfileBot> {
@@ -27,6 +33,14 @@ export function BotProfile<Bot extends ProfileBot>({ bot, onChange, onDelete, on
   const [renaming, setRenaming] = useState(false);
   const [draftName, setDraftName] = useState(bot.name);
   const [customizing, setCustomizing] = useState(false);
+  const [providers, setProviders] = useState<ProviderOption[]>([]);
+
+  useEffect(() => {
+    fetch("/api/model-providers")
+      .then((response) => response.json() as Promise<{ providers: ProviderOption[] }>)
+      .then((data) => setProviders(data.providers))
+      .catch(() => setProviders([]));
+  }, []);
 
   async function save(change: Record<string, string>): Promise<boolean> {
     const response = await fetch(`/api/bots/${bot.id}`, {
@@ -130,6 +144,28 @@ export function BotProfile<Bot extends ProfileBot>({ bot, onChange, onDelete, on
       )}
 
       <p className="leading-relaxed text-muted">{bot.instructions}</p>
+      {providers.length > 0 && (
+        <div className="flex flex-col gap-1">
+          <label className="flex flex-col gap-1 text-sm">
+            <span className="text-muted">Model</span>
+            <select
+              value={bot.provider ?? ""}
+              onChange={(event) => void save({ provider: event.target.value })}
+              className="h-11 rounded-xl border border-line bg-panel px-3 text-base outline-none focus:border-doom md:text-[15px]"
+            >
+              <option value="">Automatic</option>
+              {providers.map((provider) => (
+                <option key={provider.name} value={provider.name}>
+                  {provider.label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <span className="text-xs text-muted">
+            This Doombot tries that provider first. If it is unavailable, DOOMBOT tries the others.
+          </span>
+        </div>
+      )}
       <div className="flex flex-wrap gap-2">
         {bot.toolNames.length === 0 ? (
           <span className="text-xs text-muted">No tools. It can only think and use its memory.</span>

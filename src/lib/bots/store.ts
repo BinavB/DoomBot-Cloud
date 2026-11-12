@@ -24,6 +24,7 @@ export interface Bot {
   name: string;
   instructions: string;
   toolNames: string[];
+  provider: string | null;
   builtIn: boolean;
   routine: BotRoutine | null;
   look: BotLook;
@@ -66,6 +67,7 @@ interface BotRow {
   routine_frequency: string;
   routine_day: number | null;
   routine_last_day: string | null;
+  provider: string | null;
   avatar: string | null;
   color: string | null;
 }
@@ -142,6 +144,7 @@ function toBot(row: BotRow): Bot {
     name: row.name,
     instructions: row.instructions,
     toolNames: JSON.parse(row.tool_names) as string[],
+    provider: row.provider ?? null,
     builtIn: row.built_in === 1,
     routine:
       row.routine && row.routine_time
@@ -287,6 +290,10 @@ export async function setRoutine(
     ],
   );
   return getBot(botId);
+}
+
+export async function setBotProvider(botId: number, provider: string | null): Promise<void> {
+  await runStatement("UPDATE bots SET provider = ? WHERE id = ? AND user_id = ?", [provider, botId, currentUserId()]);
 }
 
 export async function updateBotDetails(

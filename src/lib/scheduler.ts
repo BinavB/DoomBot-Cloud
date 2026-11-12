@@ -5,6 +5,7 @@ import { startTask } from "@/lib/bots/run";
 import { listRoutineBots, markRoutineRan } from "@/lib/bots/store";
 import { routinePeriod } from "@/lib/bots/schedule";
 import { generateBriefing, findBriefing } from "@/lib/briefing/generate";
+import { sendCheckinIfDue } from "@/lib/checkins";
 import { config } from "@/lib/config";
 import { currentClock, currentDay } from "@/lib/time";
 
@@ -14,6 +15,7 @@ const globalForScheduler = globalThis as unknown as {
   doombotSchedulerStarted?: boolean;
   doombotBriefingRunning?: boolean;
   doombotRoutinesRunning?: boolean;
+  doombotCheckinsRunning?: boolean;
 };
 
 async function briefUser(userId: number, timeZone: string, at: Date): Promise<void> {
@@ -43,6 +45,22 @@ export async function runBriefingsIfDue(at: Date = new Date()): Promise<void> {
     }
   } finally {
     globalForScheduler.doombotBriefingRunning = false;
+  }
+}
+
+export async function runCheckinsIfDue(at: Date = new Date()): Promise<void> {
+  if (globalForScheduler.doombotCheckinsRunning) {
+    return;
+  }
+  globalForScheduler.doombotCheckinsRunning = true;
+  try {
+    for (const user of await listActiveUsers()) {
+      await runAsUser(user.id, user.timeZone, () => sendCheckinIfDue(user.timeZone, at)).catch((error: unknown) => {
+        console.error(`Check-in failed for user ${user.id}:`, error);
+      });
+    }
+  } finally {
+    globalForScheduler.doombotCheckinsRunning = false;
   }
 }
 
@@ -82,6 +100,9 @@ export async function runScheduledWork(): Promise<void> {
     }),
     runDueRoutines(at).catch((error: unknown) => {
       console.error("Doombot routines failed:", error);
+    }),
+    runCheckinsIfDue(at).catch((error: unknown) => {
+      console.error("Check-ins failed:", error);
     }),
     removeStaleGuests().catch((error: unknown) => {
       console.error("Guest cleanup failed:", error);

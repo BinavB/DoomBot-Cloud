@@ -2,6 +2,7 @@ import { config, type AiProvider } from "@/lib/config";
 import { AgentError, ProviderHttpError } from "@/lib/errors";
 import { currentUserId, currentUserIsGuest } from "@/lib/auth/context";
 import { guestDailyTokenLimit, guestsDailyTokenBudget } from "@/lib/auth/guest-limits";
+import { orderProviders } from "@/lib/model-providers";
 import { isCoolingDown, markFailed } from "@/lib/provider-health";
 import { guestTokensUsedToday, recordUsage, tokensUsedToday } from "@/lib/usage";
 
@@ -39,6 +40,7 @@ export interface CompletionOptions {
   onToken?: (text: string) => void;
   signal?: AbortSignal;
   reasoningEffort?: "low" | "high";
+  provider?: string;
 }
 
 interface CompletionResponse {
@@ -262,6 +264,10 @@ function currentRequester(): string | undefined {
   }
 }
 
+export function configuredProviderNames(): string[] {
+  return config.aiProviders.filter((provider) => provider.apiKey).map((provider) => provider.name);
+}
+
 export async function createChatCompletion(
   messages: ChatMessage[],
   tools?: ToolSpec[],
@@ -285,7 +291,8 @@ export async function createChatCompletion(
   }
 
   const requester = currentRequester();
-  const attempts = providers.flatMap((provider) => provider.models.map((model) => ({ provider, model })));
+  const ordered = orderProviders(providers, options.provider);
+  const attempts = ordered.flatMap((provider) => provider.models.map((model) => ({ provider, model })));
   const healthy = attempts.filter(({ provider, model }) => !isCoolingDown(provider.name, model, requester));
   const failures: string[] = [];
   const skippedProviders = new Set<string>();

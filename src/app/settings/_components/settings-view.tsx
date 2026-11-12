@@ -9,6 +9,7 @@ import { BriefingTopicsPicker } from "@/components/briefing-topics-picker";
 import { installApp, isInstalled, subscribeInstall } from "@/components/install-prompt";
 import { defaultTopics, maxTopics, type TopicId } from "@/lib/briefing/topics";
 import { SkillsSection } from "@/app/settings/_components/skills-section";
+import { CheckinsSection } from "@/app/settings/_components/checkins-section";
 import { ToolPoliciesSection } from "@/app/settings/_components/tool-policies-section";
 
 interface Memory {
@@ -178,6 +179,8 @@ export function SettingsView() {
       </section>
 
       <SkillsSection />
+
+      <CheckinsSection />
 
       <ToolPoliciesSection />
 

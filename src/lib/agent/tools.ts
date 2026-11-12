@@ -305,7 +305,7 @@ const tools: AgentTool[] = [
   {
     name: "save_note",
     description:
-      "Save a text note as a Markdown file in the notes folder. Use only when the user asks to save or write a note.",
+      "Save a text note to the user's Library. Use only when the user asks to save or write a note.",
     parameters: {
       type: "object",
       properties: {
@@ -315,7 +315,7 @@ const tools: AgentTool[] = [
       required: ["title", "body"],
     },
     requiresApproval: true,
-    summarize: (args) => `Save note "${readText(args, "title", 120)}" to the notes folder`,
+    summarize: (args) => `Save note "${readText(args, "title", 120)}" to the Library`,
     run: saveNote,
   },
   {

@@ -9,6 +9,7 @@ import {
   findTool,
   parseToolArguments,
   toolSpecs,
+  type AgentTool,
   type ToolArguments,
 } from "@/lib/agent/tools";
 import { currentUserId } from "@/lib/auth/context";
@@ -25,6 +26,7 @@ export interface StoredMessage {
   role: "user" | "assistant";
   content: string;
   rating: number;
+  steps?: string[];
 }
 
 export interface AgentReply {
@@ -73,21 +75,29 @@ export function withinBudget(messages: StoredMessage[], budget: number = history
 }
 
 export async function loadMessages(conversationId: string, limit: number): Promise<StoredMessage[]> {
-  const rows = await queryRows<StoredMessage>(
-    `SELECT m.id AS id, m.role AS role, m.content AS content, COALESCE(f.rating, 0) AS rating
+  const rows = await queryRows<Omit<StoredMessage, "steps"> & { steps: string | null }>(
+    `SELECT m.id AS id, m.role AS role, m.content AS content, m.steps AS steps, COALESCE(f.rating, 0) AS rating
      FROM messages m LEFT JOIN message_feedback f ON f.message_id = m.id AND f.user_id = m.user_id
      WHERE m.user_id = ? AND m.conversation_id = ? ORDER BY m.id DESC LIMIT ?`,
     [currentUserId(), conversationId, limit],
   );
-  return [...rows].reverse();
+  return rows
+    .map(({ steps, ...row }) => ({ ...row, steps: steps ? (JSON.parse(steps) as string[]) : [] }))
+    .reverse();
 }
 
-function saveMessage(conversationId: string, role: "user" | "assistant", content: string): Promise<void> {
-  return runStatement("INSERT INTO messages (user_id, conversation_id, role, content) VALUES (?, ?, ?, ?)", [
+function saveMessage(
+  conversationId: string,
+  role: "user" | "assistant",
+  content: string,
+  steps: string[] = [],
+): Promise<void> {
+  return runStatement("INSERT INTO messages (user_id, conversation_id, role, content, steps) VALUES (?, ?, ?, ?, ?)", [
     currentUserId(),
     conversationId,
     role,
     content,
+    steps.length > 0 ? JSON.stringify(steps) : null,
   ]);
 }
 
@@ -104,10 +114,24 @@ async function delegateToBot(name: string, args: ToolArguments): Promise<string>
   return task.status === "done" ? (task.result ?? "") : `${bot.name} failed: ${task.result ?? "unknown error"}`;
 }
 
-async function executeToolCall(call: ToolCall, approvalsCreated: number[]): Promise<string> {
+async function describeStep(tool: AgentTool, args: ToolArguments): Promise<string> {
+  try {
+    return await tool.summarize(args);
+  } catch {
+    return "Working on a step";
+  }
+}
+
+async function executeToolCall(
+  call: ToolCall,
+  approvalsCreated: number[],
+  onStep: (text: string) => void,
+): Promise<string> {
   const args = parseToolArguments(call.function.arguments);
 
-  if (await findBotForTool(call.function.name)) {
+  const bot = await findBotForTool(call.function.name);
+  if (bot) {
+    onStep(`Asking ${bot.name}`);
     return delegateToBot(call.function.name, args);
   }
 
@@ -115,6 +139,8 @@ async function executeToolCall(call: ToolCall, approvalsCreated: number[]): Prom
   if (!tool) {
     return `Unknown tool: ${call.function.name}`;
   }
+
+  onStep(await describeStep(tool, args));
 
   if (tool.requiresApproval) {
     return handleApprovalTool(tool, args, approvalsCreated);
@@ -140,11 +166,17 @@ export interface AgentRun {
   skill?: { name: string; instructions: string };
   think?: boolean;
   signal?: AbortSignal;
+  onStep?: (text: string) => void;
   onToken?: (text: string) => void;
 }
 
 export async function runAgent(userText: string, run: AgentRun): Promise<AgentReply> {
-  const { conversationId, signal, onToken, image, document, skill, think } = run;
+  const { conversationId, signal, onToken, onStep, image, document, skill, think } = run;
+  const steps: string[] = [];
+  const recordStep = (text: string) => {
+    steps.push(text);
+    onStep?.(text);
+  };
   await saveMessage(conversationId, "user", userText);
   const completionOptions: CompletionOptions = { signal, onToken, reasoningEffort: think ? "high" : undefined };
   const attachmentNotes = [
@@ -196,7 +228,7 @@ export async function runAgent(userText: string, run: AgentRun): Promise<AgentRe
 
     if (completion.toolCalls.length === 0) {
       const reply = completion.content?.trim() || "I could not produce a reply.";
-      await saveMessage(conversationId, "assistant", reply);
+      await saveMessage(conversationId, "assistant", reply, steps);
       void autoTitleConversation(conversationId);
       return { reply, approvalsCreated };
     }
@@ -206,13 +238,15 @@ export async function runAgent(userText: string, run: AgentRun): Promise<AgentRe
       content: completion.content,
       tool_calls: completion.toolCalls,
     });
-    const results = await Promise.all(completion.toolCalls.map((call) => executeToolCall(call, approvalsCreated)));
+    const results = await Promise.all(
+      completion.toolCalls.map((call) => executeToolCall(call, approvalsCreated, recordStep)),
+    );
     completion.toolCalls.forEach((call, index) => {
       conversation.push({ role: "tool", tool_call_id: call.id, content: results[index] });
     });
   }
 
   const reply = "This request needed too many steps. Try a smaller request.";
-  await saveMessage(conversationId, "assistant", reply);
+  await saveMessage(conversationId, "assistant", reply, steps);
   return { reply, approvalsCreated };
 }

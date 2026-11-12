@@ -25,6 +25,7 @@ const userTables = [
   "suggestions",
   "tool_policies",
   "app_connections",
+  "checkins",
   "rate_limits",
   "message_feedback",
 ];

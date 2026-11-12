@@ -29,6 +29,7 @@ export function ChatView() {
   const [editDraft, setEditDraft] = useState("");
   const [copiedId, setCopiedId] = useState<number | null>(null);
   const [showApprovalNotice, setShowApprovalNotice] = useState(false);
+  const [activeStep, setActiveStep] = useState<string | null>(null);
   const composerRef = useRef<HTMLTextAreaElement>(null);
   const abortRef = useRef<AbortController | null>(null);
   const nextLocalId = useRef(-1);
@@ -104,6 +105,9 @@ export function ChatView() {
     const controller = new AbortController();
     abortRef.current = controller;
     let finalReply: string | null = null;
+    const steps: string[] = [];
+    const startedAt = Date.now();
+    setActiveStep(null);
     const status = startStatus("DOOMBOT is replying");
 
     try {
@@ -128,6 +132,9 @@ export function ChatView() {
         if (event.type === "token" && event.text) {
           const chunk = event.text;
           patch(chatId, replyId, (line) => ({ ...line, content: line.content + chunk }));
+        } else if (event.type === "step" && event.text) {
+          steps.push(event.text);
+          setActiveStep(event.text);
         } else if (event.type === "done") {
           finalReply = event.reply ?? null;
           if (event.approvalsCreated && event.approvalsCreated.length > 0) {
@@ -142,7 +149,8 @@ export function ChatView() {
       if (finalReply !== null) {
         status.done("Reply ready");
         const reply = finalReply;
-        patch(chatId, replyId, (line) => ({ ...line, content: reply }));
+        const seconds = Math.round((Date.now() - startedAt) / 1000);
+        patch(chatId, replyId, (line) => ({ ...line, content: reply, steps: [...steps], seconds }));
       }
     } catch (caught) {
       if (controller.signal.aborted) {
@@ -155,6 +163,7 @@ export function ChatView() {
     } finally {
       history.update(chatId, (current) => current.filter((line) => !(line.id === replyId && line.content.length === 0)));
       abortRef.current = null;
+      setActiveStep(null);
       setChatBusy(false);
       await history.reload(chatId).catch(() => undefined);
       await refreshChats().catch(() => undefined);
@@ -277,6 +286,7 @@ export function ChatView() {
           shareNotice={shareNotice}
           showApprovalNotice={showApprovalNotice}
           error={error}
+          activeStep={activeStep}
           actions={actions}
           endRef={endRef}
         />

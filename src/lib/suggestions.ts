@@ -2,10 +2,7 @@ import { createChatCompletion, type ChatMessage } from "@/lib/ai";
 import { currentUserId } from "@/lib/auth/context";
 import { queryRows, runStatement } from "@/lib/database";
 import { AgentError } from "@/lib/errors";
-import { todaysCalendarEvents, unreadEmailSummaries } from "@/lib/google/client";
-import { formatEmailsForTriage, triageEmailLimit } from "@/lib/google/triage";
-import { listTodos } from "@/lib/todos";
-import { describeNow } from "@/lib/time";
+import { gatherPersonalContext } from "@/lib/personal-context";
 
 export const maxSuggestions = 3;
 export const maxSuggestionTitleLength = 80;
@@ -38,28 +35,6 @@ export async function setSuggestionStatus(id: number, status: SuggestionStatus):
   await runStatement("UPDATE suggestions SET status = ? WHERE id = ? AND user_id = ?", [status, id, currentUserId()]);
 }
 
-async function optionalContext(read: () => Promise<string>, label: string): Promise<string> {
-  try {
-    return await read();
-  } catch {
-    return `${label}: not available.`;
-  }
-}
-
-async function gatherContext(): Promise<string> {
-  const todos = (await listTodos()).filter((todo) => !todo.done).slice(0, 20);
-  const todoLines = todos.length > 0 ? todos.map((todo) => `- ${todo.title}`).join("\n") : "(none)";
-  const calendar = await optionalContext(async () => {
-    const events = await todaysCalendarEvents();
-    return `Today's calendar:\n${events.length > 0 ? events.join("\n") : "(no events)"}`;
-  }, "Today's calendar");
-  const mail = await optionalContext(
-    async () => `Unread mail:\n${formatEmailsForTriage(await unreadEmailSummaries(triageEmailLimit))}`,
-    "Unread mail",
-  );
-  return [`The current time is ${describeNow()}.`, `Open to-dos:\n${todoLines}`, calendar, mail].join("\n\n");
-}
-
 export function parseSuggestions(text: string): { title: string; prompt: string }[] {
   const start = text.indexOf("[");
   const end = text.lastIndexOf("]");
@@ -88,7 +63,7 @@ export function parseSuggestions(text: string): { title: string; prompt: string 
 }
 
 export async function refreshSuggestions(): Promise<Suggestion[]> {
-  const context = await gatherContext();
+  const context = await gatherPersonalContext();
   const messages: ChatMessage[] = [
     { role: "system", content: suggestionSystemPrompt },
     { role: "user", content: `<user_context>\n${context}\n</user_context>` },

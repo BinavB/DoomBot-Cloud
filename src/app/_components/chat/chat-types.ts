@@ -3,6 +3,8 @@ export interface ChatLine {
   role: "user" | "assistant";
   content: string;
   rating: number;
+  steps?: string[];
+  seconds?: number;
 }
 
 export const suggestions = [

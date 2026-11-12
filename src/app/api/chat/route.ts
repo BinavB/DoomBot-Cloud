@@ -112,6 +112,7 @@ export const POST = withUser(async (request: Request) => {
         document,
         skill,
         think: body.think === true,
+        onStep: (text) => send({ type: "step", text }),
         signal: controller.signal,
         onToken: (text) => {
           partial += text;

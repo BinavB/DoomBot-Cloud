@@ -125,7 +125,7 @@ async function runConversation(bot: Bot, instruction: string): Promise<string> {
   ];
 
   for (let step = 0; step < maxSteps; step++) {
-    const completion = await createChatCompletion(conversation, specs);
+    const completion = await createChatCompletion(conversation, specs, { provider: bot.provider ?? undefined });
 
     if (completion.toolCalls.length === 0) {
       return completion.content?.trim() || "The bot returned no answer.";
