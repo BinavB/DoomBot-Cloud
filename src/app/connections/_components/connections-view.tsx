@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useSyncExternalStore } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { GoogleConnection } from "@/app/connections/_components/google-connection";
 import { NotionConnection } from "@/app/connections/_components/notion-connection";
 import { PageNotice } from "@/components/page-notice";
@@ -41,6 +41,32 @@ export function ConnectionsView() {
   const googleResult = useSyncExternalStore(subscribeToLocation, readGoogleResult, () => null);
   const notionResult = useSyncExternalStore(subscribeToLocation, readNotionResult, () => null);
   const [note, setNote] = useState<Note | null>(null);
+  const [alertsOn, setAlertsOn] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    fetch("/api/mail-watch")
+      .then((response) => response.json() as Promise<{ enabled: boolean }>)
+      .then((data) => setAlertsOn(data.enabled))
+      .catch(() => setAlertsOn(false));
+  }, []);
+
+  async function toggleAlerts() {
+    if (alertsOn === null) {
+      return;
+    }
+    const response = await fetch("/api/mail-watch", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ enabled: !alertsOn }),
+    });
+    const data = (await response.json().catch(() => ({}))) as { error?: string };
+    if (!response.ok) {
+      setNote({ text: data.error ?? "Email alerts could not be changed.", tone: "error" });
+      return;
+    }
+    setAlertsOn(!alertsOn);
+    setNote({ text: !alertsOn ? "Email alerts are on." : "Email alerts are off.", tone: "success" });
+  }
   const urlNote = (googleResult ? googleNotes[googleResult] : undefined) ?? (notionResult ? notionNotes[notionResult] : undefined);
   const shownNote = note ?? urlNote ?? null;
 
@@ -54,7 +80,12 @@ export function ConnectionsView() {
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 px-4 py-8 md:px-6">
       {error && <PageNotice tone="error">{error}</PageNotice>}
       {shownNote && <PageNotice tone={shownNote.tone}>{shownNote.text}</PageNotice>}
-      <GoogleConnection connected={status?.google ?? null} onDisconnect={() => void disconnectApp("google", "Google")} />
+      <GoogleConnection
+        connected={status?.google ?? null}
+        alertsOn={alertsOn}
+        onToggleAlerts={() => void toggleAlerts()}
+        onDisconnect={() => void disconnectApp("google", "Google")}
+      />
       <NotionConnection
         connected={status?.notion ?? null}
         available={status?.notionAvailable ?? false}

@@ -6,6 +6,7 @@ import { listRoutineBots, markRoutineRan } from "@/lib/bots/store";
 import { routinePeriod } from "@/lib/bots/schedule";
 import { generateBriefing, findBriefing } from "@/lib/briefing/generate";
 import { sendCheckinIfDue } from "@/lib/checkins";
+import { alertNewEmails } from "@/lib/mail-watch";
 import { config } from "@/lib/config";
 import { currentClock, currentDay } from "@/lib/time";
 
@@ -16,6 +17,7 @@ const globalForScheduler = globalThis as unknown as {
   doombotBriefingRunning?: boolean;
   doombotRoutinesRunning?: boolean;
   doombotCheckinsRunning?: boolean;
+  doombotMailRunning?: boolean;
 };
 
 async function briefUser(userId: number, timeZone: string, at: Date): Promise<void> {
@@ -64,6 +66,22 @@ export async function runCheckinsIfDue(at: Date = new Date()): Promise<void> {
   }
 }
 
+export async function runMailWatchIfDue(): Promise<void> {
+  if (globalForScheduler.doombotMailRunning) {
+    return;
+  }
+  globalForScheduler.doombotMailRunning = true;
+  try {
+    for (const user of await listActiveUsers()) {
+      await runAsUser(user.id, user.timeZone, () => alertNewEmails()).catch((error: unknown) => {
+        console.error(`New-mail check failed for user ${user.id}:`, error);
+      });
+    }
+  } finally {
+    globalForScheduler.doombotMailRunning = false;
+  }
+}
+
 export async function runDueRoutines(at: Date = new Date()): Promise<void> {
   if (globalForScheduler.doombotRoutinesRunning) {
     return;
@@ -103,6 +121,9 @@ export async function runScheduledWork(): Promise<void> {
     }),
     runCheckinsIfDue(at).catch((error: unknown) => {
       console.error("Check-ins failed:", error);
+    }),
+    runMailWatchIfDue().catch((error: unknown) => {
+      console.error("New-mail check failed:", error);
     }),
     removeStaleGuests().catch((error: unknown) => {
       console.error("Guest cleanup failed:", error);

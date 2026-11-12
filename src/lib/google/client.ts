@@ -13,6 +13,7 @@ interface CalendarEvent {
 
 interface MessageHeaders {
   snippet?: string;
+  internalDate?: string;
   payload?: { headers?: { name: string; value: string }[] };
 }
 
@@ -83,6 +84,34 @@ export async function todaysCalendarEvents(): Promise<string[]> {
   return (data.items ?? []).map((event) => {
     const when = event.start?.dateTime ? formatClock(event.start.dateTime) : "all day";
     return `${when} - ${event.summary ?? "(no title)"}`;
+  });
+}
+
+export interface NewEmail extends EmailSummary {
+  receivedAt: number;
+}
+
+export async function unreadEmailsSince(afterMs: number, limit: number): Promise<NewEmail[]> {
+  const list = await googleGet<{ messages?: { id: string }[] }>(
+    `https://gmail.googleapis.com/gmail/v1/users/me/messages?q=${encodeURIComponent(`is:unread after:${Math.floor(afterMs / 1000)}`)}&maxResults=${limit}`,
+  );
+  const messages = await Promise.all(
+    (list.messages ?? []).map((message) =>
+      googleGet<MessageHeaders>(
+        `https://gmail.googleapis.com/gmail/v1/users/me/messages/${encodeURIComponent(message.id)}?format=metadata&metadataHeaders=Subject&metadataHeaders=From`,
+      ),
+    ),
+  );
+  return messages.map((message) => {
+    const headers = message.payload?.headers ?? [];
+    const read = (name: string) =>
+      headers.find((header) => header.name.toLowerCase() === name.toLowerCase())?.value ?? "";
+    return {
+      from: read("From") || "unknown",
+      subject: read("Subject") || "(no subject)",
+      snippet: message.snippet ?? "",
+      receivedAt: Number(message.internalDate ?? 0),
+    };
   });
 }
 

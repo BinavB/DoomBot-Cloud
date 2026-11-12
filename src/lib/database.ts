@@ -192,6 +192,12 @@ const schema = `
   );
   CREATE INDEX IF NOT EXISTS suggestions_user_index ON suggestions (user_id, status, id);
 
+  CREATE TABLE IF NOT EXISTS mail_watch (
+    user_id INTEGER PRIMARY KEY,
+    enabled INTEGER NOT NULL DEFAULT 0,
+    last_received INTEGER NOT NULL DEFAULT 0
+  );
+
   CREATE TABLE IF NOT EXISTS checkins (
     user_id INTEGER PRIMARY KEY,
     enabled INTEGER NOT NULL DEFAULT 0,

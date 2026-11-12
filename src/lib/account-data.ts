@@ -26,6 +26,7 @@ const userTables = [
   "tool_policies",
   "app_connections",
   "checkins",
+  "mail_watch",
   "rate_limits",
   "message_feedback",
 ];
