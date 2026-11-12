@@ -72,7 +72,7 @@ export function SuggestionsPanel() {
         </button>
       </div>
       <p className="text-sm text-muted">
-        DOOMBOT looks at your to-dos, today&apos;s calendar and unread mail, then proposes up to 3 next steps. Nothing runs until you press Start.
+        DOOMBOT looks at your to-dos, today&apos;s calendar and unread mail, then proposes up to 3 next steps. Read each request first: nothing runs until you press Start, and sending or deleting still asks you.
       </p>
       {error && <PageNotice tone="error">{error}</PageNotice>}
       {suggestions && suggestions.length === 0 && !finding && (
@@ -82,6 +82,7 @@ export function SuggestionsPanel() {
         {suggestions?.map((suggestion) => (
           <li key={suggestion.id} className="flex flex-col gap-2 rounded-xl border border-line px-3 py-3">
             <span className="text-sm font-semibold">{suggestion.title}</span>
+            <span className="whitespace-pre-line text-sm leading-relaxed text-muted">{suggestion.prompt}</span>
             <div className="flex gap-2">
               <button
                 type="button"

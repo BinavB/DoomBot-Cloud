@@ -76,7 +76,7 @@ export function ApprovalsView() {
         <ul className="flex flex-col gap-3">
           {approvals.map((approval) => (
             <li key={approval.id} className="flex flex-col gap-4 rounded-2xl border border-line bg-panel p-5">
-              <p className="leading-relaxed">{approval.summary}</p>
+              <p className="max-h-80 overflow-y-auto whitespace-pre-line break-words leading-relaxed">{approval.summary}</p>
               <div className="flex gap-2">
                 <button
                   type="button"

@@ -234,7 +234,7 @@ const tools: AgentTool[] = [
     requiresApproval: true,
     summarize: (args) => {
       const mail = readOutgoingMail(args);
-      return `Send email to ${mail.to} with subject "${mail.subject}"`;
+      return `Send email to ${mail.to} with subject "${mail.subject}":\n\n${mail.body}`;
     },
     run: async (args) => {
       const mail = readOutgoingMail(args);
