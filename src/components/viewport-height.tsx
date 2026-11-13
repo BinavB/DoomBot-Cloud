@@ -11,14 +11,25 @@ export function ViewportHeight() {
       return;
     }
     const root = document.documentElement;
+    let baselineHeight = viewport.height;
+    let baselineWidth = viewport.width;
 
     function update() {
       if (!viewport) {
         return;
       }
+      if (viewport.width !== baselineWidth) {
+        baselineWidth = viewport.width;
+        baselineHeight = viewport.height;
+      }
+      const keyboardOpen = baselineHeight - viewport.height > keyboardThresholdPixels;
+      if (!keyboardOpen) {
+        baselineHeight = viewport.height;
+      }
       root.style.setProperty("--app-height", `${viewport.height}px`);
       root.style.setProperty("--app-top", `${viewport.offsetTop}px`);
-      root.dataset.keyboard = window.innerHeight - viewport.height > keyboardThresholdPixels ? "open" : "closed";
+      root.style.setProperty("--full-height", `${baselineHeight}px`);
+      root.dataset.keyboard = keyboardOpen ? "open" : "closed";
     }
 
     update();

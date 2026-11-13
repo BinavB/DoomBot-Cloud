@@ -66,7 +66,10 @@ export function MobileNav({ title, actions, pendingCount, unreadCount, account }
         </div>
       </header>
 
-      <div className={`fixed inset-0 z-40 md:hidden ${open ? "" : "pointer-events-none"}`} inert={!open}>
+      <div
+        className={`fixed inset-x-0 top-[var(--app-top,0px)] z-40 h-[var(--full-height,100%)] md:hidden ${open ? "" : "pointer-events-none"}`}
+        inert={!open}
+      >
         <div
           aria-hidden
           onClick={close}
