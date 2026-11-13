@@ -7,7 +7,10 @@ export interface ChatLine {
   seconds?: number;
 }
 
+export const getToKnowMePrompt = "Get to know me";
+
 export const suggestions = [
+  getToKnowMePrompt,
   "Brief me on today",
   "What's on my calendar today?",
   "Summarize my unread email",

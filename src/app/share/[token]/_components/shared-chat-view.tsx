@@ -4,6 +4,7 @@ import Link from "next/link";
 import { use, useEffect, useState } from "react";
 import { DoomMark } from "@/components/doom-mark";
 import { Markdown } from "@/components/markdown";
+import { splitChoices } from "@/lib/reply-choices";
 
 interface SharedChat {
   title: string;
@@ -54,7 +55,7 @@ export function SharedChatView({ params }: { params: Promise<{ token: string }> 
           <div key={index} className="flex gap-3">
             <DoomMark size={28} />
             <div className="min-w-0 flex-1 pt-0.5">
-              <Markdown text={message.content} />
+              <Markdown text={splitChoices(message.content).body} />
             </div>
           </div>
         ),

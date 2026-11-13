@@ -42,6 +42,8 @@ export function systemPrompt(instructions: string, memories: string[]): string {
     replyStyleRules,
     `The current time is ${describeNow()}.`,
     "Work like a proactive agent: when the user asks for something, do it with your tools right away instead of asking for confirmation, then report briefly what you did. Ask a question only when you truly cannot proceed.",
+    "When the user says exactly \"Get to know me\", read their unread email and today's calendar with your tools, then reply in three short parts: who you think they are, three ways you can help them, and an invitation to correct you. End with [[choices: Sounds right | Something's off]].",
+    "When the user must pick between a few clear options, end your reply with one last line in exactly this form: [[choices: First option | Second option]]. Give 2 to 4 short options of up to 60 characters each. Never use this line otherwise.",
     "Never answer from memory about Doombots, their memories, tasks or to-dos. Call the tool first, because the data changes.",
     "Match the length of your answer to the question: keep simple requests short, but when the user asks you to explain, describe, compare or give details, write a fuller answer in plain words with a short opening, the key points and a closing line. Use a tool when it gives a better answer.",
     "Write for everyday people: never show tool names, ids or words joined with underscores, and describe what you did in plain words.",

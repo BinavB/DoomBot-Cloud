@@ -10,6 +10,7 @@ import { Icon } from "@/components/icon";
 import type { ShareNotice } from "@/components/chat-store";
 import { Markdown } from "@/components/markdown";
 import { ThinkingIndicator } from "@/components/thinking-indicator";
+import { splitChoices } from "@/lib/reply-choices";
 import { canSpeak } from "@/lib/speech";
 
 export interface MessageActions {
@@ -143,13 +144,15 @@ function UserMessage({ line, editing, editDraft, sending, onEditDraft, actions }
   );
 }
 
-function AssistantMessage({ line, index, copied, sending, actions }: {
+function AssistantMessage({ line, index, isLast, copied, sending, actions }: {
   line: ChatLine;
   index: number;
+  isLast: boolean;
   copied: boolean;
   sending: boolean;
   actions: MessageActions;
 }) {
+  const { body, choices } = splitChoices(line.content);
   const showActions = line.content.length > 0 && !sending;
   const rateButton = (rating: number, label: string, icon: string, active: boolean, activeClass: string) => (
     <button
@@ -166,7 +169,21 @@ function AssistantMessage({ line, index, copied, sending, actions }: {
     <div data-assistant className="group flex gap-3">
       <DoomMark size={28} />
       <div className="min-w-0 flex-1 pt-0.5">
-        {line.content.length > 0 && <Markdown text={line.content} />}
+        {body.length > 0 && <Markdown text={body} />}
+        {isLast && !sending && choices.length > 0 && (
+          <div className="mt-3 flex flex-wrap gap-2">
+            {choices.map((choice) => (
+              <button
+                key={choice}
+                type="button"
+                onClick={() => actions.onSuggest(choice)}
+                className="rounded-full border border-doom/50 px-3 py-1.5 text-sm text-doom hover:bg-doom-soft"
+              >
+                {choice}
+              </button>
+            ))}
+          </div>
+        )}
         {showActions && line.steps && line.steps.length > 0 && <WorkedChip seconds={line.seconds} steps={line.steps} />}
         {showActions && (
           <div className="mt-2 flex flex-wrap gap-1">
@@ -203,7 +220,7 @@ export function ChatMessages({ lines, empty, sending, editingId, editDraft, onEd
         line.role === "user" ? (
           <UserMessage key={line.id} line={line} editing={editingId === line.id} editDraft={editDraft} sending={sending} onEditDraft={onEditDraft} actions={actions} />
         ) : (
-          <AssistantMessage key={line.id} line={line} index={index} copied={copiedId === line.id} sending={sending} actions={actions} />
+          <AssistantMessage key={line.id} line={line} index={index} isLast={index === lines.length - 1} copied={copiedId === line.id} sending={sending} actions={actions} />
         ),
       )}
 

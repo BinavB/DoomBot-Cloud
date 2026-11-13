@@ -12,6 +12,7 @@ import { announceApprovalsChanged } from "@/components/events";
 import { Icon } from "@/components/icon";
 import { announceStatus, startStatus } from "@/components/status-store";
 import { readEvents } from "@/lib/chat-stream";
+import { splitChoices } from "@/lib/reply-choices";
 import { speak, stopSpeaking } from "@/lib/speech";
 
 const composerMaxHeight = 200;
@@ -225,7 +226,7 @@ export function ChatView() {
 
   async function copy(line: ChatLine) {
     try {
-      await navigator.clipboard.writeText(line.content);
+      await navigator.clipboard.writeText(splitChoices(line.content).body);
       setCopiedId(line.id);
       announceStatus("Copied to clipboard");
       setTimeout(() => setCopiedId((current) => (current === line.id ? null : current)), 1500);
@@ -248,7 +249,7 @@ export function ChatView() {
     onSaveEdit: (line) => void saveEdit(line),
     onCopy: (line) => void copy(line),
     onSpeak: (line) => {
-      speak(line.content);
+      speak(splitChoices(line.content).body);
       announceStatus("Reading aloud");
     },
     onRate: (line, rating) => void rate(line, rating),

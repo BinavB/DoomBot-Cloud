@@ -10,6 +10,7 @@ import { installApp, isInstalled, subscribeInstall } from "@/components/install-
 import { defaultTopics, maxTopics, type TopicId } from "@/lib/briefing/topics";
 import { SkillsSection } from "@/app/settings/_components/skills-section";
 import { CheckinsSection } from "@/app/settings/_components/checkins-section";
+import { SetupSection } from "@/app/settings/_components/setup-section";
 import { ToolPoliciesSection } from "@/app/settings/_components/tool-policies-section";
 
 interface Memory {
@@ -108,6 +109,8 @@ export function SettingsView() {
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 px-4 py-6 md:px-6 md:py-8">
       {error && <PageNotice tone="error">{error}</PageNotice>}
+
+      <SetupSection />
 
       <section className="flex flex-col gap-3 rounded-2xl border border-line bg-panel p-5">
         <h2 className="font-display text-lg font-semibold">Home city and time zone</h2>
